@@ -386,8 +386,8 @@ export default function App() {
       <div style={{ width:44, height:44, borderRadius:12, background:"#1e3a5f33", display:"flex", alignItems:"center", justifyContent:"center" }}>
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
       </div>
-      <div style={{ fontSize:22, fontWeight:800, color:C.text, letterSpacing:-0.5 }}>Ara</div>
-      <div style={{ fontSize:13, color:C.sub }}>Clareza para sua vida financeira</div>
+      <div style={{ fontSize:22, fontWeight:800, color:C.text, letterSpacing:-0.5 }}>Ara Finance</div>
+      <div style={{ fontSize:13, color:C.sub }}>Controle com clareza. Viva melhor.</div>
     </div>
   );
 
