@@ -75,7 +75,6 @@ const ACCOUNT_COLORS = ["#3b82f6","#8b5cf6","#ec4899","#ef4444","#f59e0b","#10b9
 const BANK_BRANDS = {
   "nubank":       { color:"#820AD1", bg:"#1a0628", logo:"https://upload.wikimedia.org/wikipedia/commons/thumb/f/f1/Nubank_logo_2021.svg/240px-Nubank_logo_2021.svg.png" },
   "itau":         { color:"#EC7000", bg:"#1e0e00", logo:"https://upload.wikimedia.org/wikipedia/commons/thumb/8/8b/Banco_Ita%C3%BA_logo.svg/240px-Banco_Ita%C3%BA_logo.svg.png" },
-  "itauu":        { color:"#EC7000", bg:"#1e0e00", logo:"https://upload.wikimedia.org/wikipedia/commons/thumb/8/8b/Banco_Ita%C3%BA_logo.svg/240px-Banco_Ita%C3%BA_logo.svg.png" },
   "bradesco":     { color:"#CC0000", bg:"#1a0000", logo:"https://upload.wikimedia.org/wikipedia/commons/thumb/3/39/Bradesco_logo.svg/240px-Bradesco_logo.svg.png" },
   "bb":           { color:"#F9DD16", bg:"#141100", logo:"https://upload.wikimedia.org/wikipedia/commons/thumb/6/65/Banco_do_Brasil_logo_%282020%29.svg/240px-Banco_do_Brasil_logo_%282020%29.svg.png" },
   "caixa":        { color:"#0070AF", bg:"#000f1a", logo:"https://upload.wikimedia.org/wikipedia/commons/thumb/8/8a/Caixa_Econ%C3%B4mica_Federal_logo.svg/240px-Caixa_Econ%C3%B4mica_Federal_logo.svg.png" },
