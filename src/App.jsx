@@ -75,6 +75,7 @@ const ACCOUNT_COLORS = ["#3b82f6","#8b5cf6","#ec4899","#ef4444","#f59e0b","#10b9
 const BANK_BRANDS = {
   "nubank":       { color:"#820AD1", bg:"#1a0628", logo:"https://upload.wikimedia.org/wikipedia/commons/thumb/f/f1/Nubank_logo_2021.svg/240px-Nubank_logo_2021.svg.png" },
   "itau":         { color:"#EC7000", bg:"#1e0e00", logo:"https://upload.wikimedia.org/wikipedia/commons/thumb/8/8b/Banco_Ita%C3%BA_logo.svg/240px-Banco_Ita%C3%BA_logo.svg.png" },
+  "itauu":        { color:"#EC7000", bg:"#1e0e00", logo:"https://upload.wikimedia.org/wikipedia/commons/thumb/8/8b/Banco_Ita%C3%BA_logo.svg/240px-Banco_Ita%C3%BA_logo.svg.png" },
   "bradesco":     { color:"#CC0000", bg:"#1a0000", logo:"https://upload.wikimedia.org/wikipedia/commons/thumb/3/39/Bradesco_logo.svg/240px-Bradesco_logo.svg.png" },
   "bb":           { color:"#F9DD16", bg:"#141100", logo:"https://upload.wikimedia.org/wikipedia/commons/thumb/6/65/Banco_do_Brasil_logo_%282020%29.svg/240px-Banco_do_Brasil_logo_%282020%29.svg.png" },
   "caixa":        { color:"#0070AF", bg:"#000f1a", logo:"https://upload.wikimedia.org/wikipedia/commons/thumb/8/8a/Caixa_Econ%C3%B4mica_Federal_logo.svg/240px-Caixa_Econ%C3%B4mica_Federal_logo.svg.png" },
@@ -363,8 +364,8 @@ export default function App() {
   const exportData = () => {
     const compressed = compress({ transactions, accounts, goals, nextTxId, nextAccId, nextGoalId });
     setBackupText(compressed);
-    setBackupMsg("Selecione o texto abaixo e copie para o Notas do iPhone.");
-    if (navigator.clipboard) navigator.clipboard.writeText(compressed).then(()=>setBackupMsg("Copiado! Cole no Notas do iPhone.")).catch(()=>{});
+    setBackupMsg("Selecione o texto abaixo e copie para o Notas.");
+    if (navigator.clipboard) navigator.clipboard.writeText(compressed).then(()=>setBackupMsg("Copiado! Cole no Notas.")).catch(()=>{});
   };
 
   const importData = () => {
@@ -383,11 +384,9 @@ export default function App() {
   // -- Render -------------------------------------------------
   if (loading) return (
     <div style={{ minHeight:"100vh", background:C.bg, display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", color:C.text, gap:12 }}>
-      <div style={{ width:44, height:44, borderRadius:12, background:"#1e3a5f33", display:"flex", alignItems:"center", justifyContent:"center" }}>
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
-      </div>
-      <div style={{ fontSize:22, fontWeight:800, color:C.text, letterSpacing:-0.5 }}>Ara Finance</div>
-      <div style={{ fontSize:13, color:C.sub }}>Controle com clareza. Viva melhor.</div>
+      <svg width="90" height="90" viewBox="0 0 382 311" fill="none" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="araGrad" x1="0" y1="0" x2="382" y2="311" gradientUnits="userSpaceOnUse"><stop offset="0%" stopColor="#2563EB"/><stop offset="100%" stopColor="#7C3AED"/></linearGradient></defs><path d="M158.852 1.11034C183.628 -0.369723 198.625 -0.370178 221.923 1.10936L222.563 0.776355L222.765 1.1621L223.2 1.19042L223.154 1.91014L290.525 131.163L290.567 131.244L290.768 131.272L290.728 131.552L290.987 132.05L290.633 132.234L290.49 133.254L289.5 133.115C275.182 131.114 264.194 132.098 254.961 134.915C245.998 137.65 238.628 142.13 231.414 147.389L231.498 147.556L230.507 148.052L229.943 148.468L229.871 148.37L229.71 148.452L229.262 147.558L229.238 147.511L228.757 146.857L228.869 146.774L189.83 68.8525L101.807 245.142C119.322 245.423 138.168 239.129 157.136 228.48C176.345 217.697 195.608 202.486 213.639 185.271V185.125H213.793C214.035 184.893 214.279 184.663 214.521 184.431L215.187 185.125H215.639V185.596L215.905 185.874C215.817 185.959 215.726 186.043 215.638 186.128C215.637 229.654 199.147 260.677 176.49 280.81C153.859 300.919 125.119 310.125 100.639 310.125H99.6387V310.089H0L0.744141 308.634L157.624 1.91112L157.581 1.18651L158.008 1.16014L158.203 0.779285L158.852 1.11034ZM265.229 153.774C274.968 150.985 286.439 150.119 300.99 152.153L301.981 152.292L301.833 153.352L380.904 308.636L381.645 310.089H310.689L310.413 309.536L239.81 168.204L239.212 167.393L240.018 166.8C247.541 161.26 255.49 156.564 265.229 153.774ZM221.513 3.08788C198.556 1.63769 183.689 1.638 159.267 3.08983L3.26953 308.089H101.212V308.121C125.107 307.978 153.095 298.923 175.162 279.315C197.048 259.868 213.151 230.005 213.627 188.042C195.916 204.791 177.016 219.614 158.115 230.225C138.64 241.158 119.095 247.659 100.818 247.12L100.661 247.437L98.8711 246.544L99.3184 245.649L188.934 66.1709L189.827 64.3818L190.723 66.1689L230.506 145.577C237.723 140.338 245.227 135.795 254.377 133.003C263.572 130.198 274.37 129.177 288.143 130.917L221.513 3.08788ZM299.934 154.029C285.983 152.166 275.035 153.046 265.779 155.697C256.643 158.314 249.1 162.673 241.896 167.906L311.926 308.089H378.382L299.934 154.029Z" fill="url(#araGrad)"/></svg>
+      <div style={{ fontSize:24, fontWeight:800, color:C.text, letterSpacing:-0.5 }}>Ara Finance</div>
+      <div style={{ fontSize:13, color:C.sub }}>Controle com clareza. Viva melhor</div>
     </div>
   );
 
@@ -401,8 +400,9 @@ export default function App() {
       {/* Header */}
       <div style={{ padding:"20px 20px 16px", background:"linear-gradient(180deg, #0d1424 0%, "+C.bg+" 100%)" }}>
         <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start" }}>
-          <div>
-            <div style={{ fontSize:22, fontWeight:800, color:C.text, letterSpacing:-0.5 }}>Ara</div>
+          <div style={{ display:"flex", alignItems:"center", gap:10 }}>
+            <svg width="36" height="36" viewBox="0 0 382 311" fill="none" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="araGradH" x1="0" y1="0" x2="382" y2="311" gradientUnits="userSpaceOnUse"><stop offset="0%" stopColor="#2563EB"/><stop offset="100%" stopColor="#7C3AED"/></linearGradient></defs><path d="M158.852 1.11034C183.628 -0.369723 198.625 -0.370178 221.923 1.10936L222.563 0.776355L222.765 1.1621L223.2 1.19042L223.154 1.91014L290.525 131.163L290.567 131.244L290.768 131.272L290.728 131.552L290.987 132.05L290.633 132.234L290.49 133.254L289.5 133.115C275.182 131.114 264.194 132.098 254.961 134.915C245.998 137.65 238.628 142.13 231.414 147.389L231.498 147.556L230.507 148.052L229.943 148.468L229.871 148.37L229.71 148.452L229.262 147.558L229.238 147.511L228.757 146.857L228.869 146.774L189.83 68.8525L101.807 245.142C119.322 245.423 138.168 239.129 157.136 228.48C176.345 217.697 195.608 202.486 213.639 185.271V185.125H213.793C214.035 184.893 214.279 184.663 214.521 184.431L215.187 185.125H215.639V185.596L215.905 185.874C215.817 185.959 215.726 186.043 215.638 186.128C215.637 229.654 199.147 260.677 176.49 280.81C153.859 300.919 125.119 310.125 100.639 310.125H99.6387V310.089H0L0.744141 308.634L157.624 1.91112L157.581 1.18651L158.008 1.16014L158.203 0.779285L158.852 1.11034ZM265.229 153.774C274.968 150.985 286.439 150.119 300.99 152.153L301.981 152.292L301.833 153.352L380.904 308.636L381.645 310.089H310.689L310.413 309.536L239.81 168.204L239.212 167.393L240.018 166.8C247.541 161.26 255.49 156.564 265.229 153.774ZM221.513 3.08788C198.556 1.63769 183.689 1.638 159.267 3.08983L3.26953 308.089H101.212V308.121C125.107 307.978 153.095 298.923 175.162 279.315C197.048 259.868 213.151 230.005 213.627 188.042C195.916 204.791 177.016 219.614 158.115 230.225C138.64 241.158 119.095 247.659 100.818 247.12L100.661 247.437L98.8711 246.544L99.3184 245.649L188.934 66.1709L189.827 64.3818L190.723 66.1689L230.506 145.577C237.723 140.338 245.227 135.795 254.377 133.003C263.572 130.198 274.37 129.177 288.143 130.917L221.513 3.08788ZM299.934 154.029C285.983 152.166 275.035 153.046 265.779 155.697C256.643 158.314 249.1 162.673 241.896 167.906L311.926 308.089H378.382L299.934 154.029Z" fill="url(#araGradH)"/></svg>
+            <div style={{ fontSize:22, fontWeight:800, color:C.text, letterSpacing:-0.5 }}>Ara Finance</div>
           </div>
           <button onClick={()=>{ setShowBackup(true); setBackupText(""); setBackupMsg(""); setImportText(""); setImportSuccess(false); }} style={{ background:C.card, border:"1px solid "+C.border, color:C.sub, borderRadius:12, width:38, height:38, cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center" }}>
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
@@ -891,7 +891,7 @@ export default function App() {
           </div>
           <div style={{ display:"flex", flexDirection:"column", gap:12 }}>
             <input style={iStyle} placeholder="Descricao" value={txModal.description} onChange={e=>setTxModal(f=>({ ...f, description:e.target.value }))} />
-            <input style={iStyle} placeholder="Valor total (ex: 1.200)" type="text" inputMode="decimal" value={txModal.amount} onChange={e=>setTxModal(f=>({ ...f, amount:e.target.value }))} />
+            <input style={iStyle} placeholder={txModal.type==="expense" ? "Valor (valor total para parcelas)" : "Valor total"} type="text" inputMode="decimal" value={txModal.amount} onChange={e=>setTxModal(f=>({ ...f, amount:e.target.value }))} />
             {txModal.type==="expense"&&txModal.editId==null && (
               <div style={{ background:C.card, borderRadius:12, padding:14 }}>
                 <div style={{ fontSize:12, color:C.sub, marginBottom:10 }}>Parcelamento</div>
@@ -938,8 +938,8 @@ export default function App() {
           </div>
           <div style={{ display:"flex", flexDirection:"column", gap:12 }}>
             <input style={iStyle} placeholder="Nome (ex: Nubank, Bradesco...)" value={accModal.name} onChange={e=>setAccModal(f=>({ ...f, name:e.target.value }))} />
-            {accModal.kind==="bank" && <input style={iStyle} placeholder="Saldo atual (ex: 1.500)" type="text" inputMode="decimal" value={accModal.balance} onChange={e=>setAccModal(f=>({ ...f, balance:e.target.value }))} />}
-            {accModal.kind==="card" && <input style={iStyle} placeholder="Limite (ex: 4.900)" type="text" inputMode="decimal" value={accModal.limit} onChange={e=>setAccModal(f=>({ ...f, limit:e.target.value }))} />}
+            {accModal.kind==="bank" && <input style={iStyle} placeholder="Saldo atual" type="text" inputMode="decimal" value={accModal.balance} onChange={e=>setAccModal(f=>({ ...f, balance:e.target.value }))} />}
+            {accModal.kind==="card" && <input style={iStyle} placeholder="Limite total (opcional)" type="text" inputMode="decimal" value={accModal.limit} onChange={e=>setAccModal(f=>({ ...f, limit:e.target.value }))} />}
             <div>
               <div style={{ fontSize:12, color:C.sub, marginBottom:4 }}>Cor</div>
               <div style={{ display:"flex", gap:8, flexWrap:"wrap" }}>
@@ -985,7 +985,7 @@ export default function App() {
                   </div>
                   <div>
                     <div style={{ fontSize:14, fontWeight:600, color:C.text }}>Exportar</div>
-                    <div style={{ fontSize:12, color:C.sub, marginTop:1 }}>Gere o código e salve no Notas do iPhone</div>
+                    <div style={{ fontSize:12, color:C.sub, marginTop:1 }}>Gere o código e salve no Notas.</div>
                   </div>
                 </div>
                 <button onClick={exportData} style={btn("linear-gradient(135deg,#10b981,#059669)",{ marginBottom:backupText?10:0 })}>Gerar código de backup</button>
@@ -1012,19 +1012,19 @@ export default function App() {
             <div style={{ background:C.card, borderRadius:14, overflow:"hidden" }}>
               <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", padding:"14px 16px", borderBottom:"1px solid "+C.border }}>
                 <div style={{ display:"flex", alignItems:"center", gap:12 }}>
-                  <div style={{ width:38, height:38, borderRadius:10, background:"#1e3a5f33", display:"flex", alignItems:"center", justifyContent:"center" }}>
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={C.blue} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+                  <div style={{ width:38, height:38, borderRadius:10, overflow:"hidden" }}>
+                    <svg width="38" height="38" viewBox="0 0 382 311" fill="none" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="araGradS" x1="0" y1="0" x2="382" y2="311" gradientUnits="userSpaceOnUse"><stop offset="0%" stopColor="#2563EB"/><stop offset="100%" stopColor="#7C3AED"/></linearGradient></defs><path d="M158.852 1.11034C183.628 -0.369723 198.625 -0.370178 221.923 1.10936L222.563 0.776355L222.765 1.1621L223.2 1.19042L223.154 1.91014L290.525 131.163L290.567 131.244L290.768 131.272L290.728 131.552L290.987 132.05L290.633 132.234L290.49 133.254L289.5 133.115C275.182 131.114 264.194 132.098 254.961 134.915C245.998 137.65 238.628 142.13 231.414 147.389L231.498 147.556L230.507 148.052L229.943 148.468L229.871 148.37L229.71 148.452L229.262 147.558L229.238 147.511L228.757 146.857L228.869 146.774L189.83 68.8525L101.807 245.142C119.322 245.423 138.168 239.129 157.136 228.48C176.345 217.697 195.608 202.486 213.639 185.271V185.125H213.793C214.035 184.893 214.279 184.663 214.521 184.431L215.187 185.125H215.639V185.596L215.905 185.874C215.817 185.959 215.726 186.043 215.638 186.128C215.637 229.654 199.147 260.677 176.49 280.81C153.859 300.919 125.119 310.125 100.639 310.125H99.6387V310.089H0L0.744141 308.634L157.624 1.91112L157.581 1.18651L158.008 1.16014L158.203 0.779285L158.852 1.11034ZM265.229 153.774C274.968 150.985 286.439 150.119 300.99 152.153L301.981 152.292L301.833 153.352L380.904 308.636L381.645 310.089H310.689L310.413 309.536L239.81 168.204L239.212 167.393L240.018 166.8C247.541 161.26 255.49 156.564 265.229 153.774ZM221.513 3.08788C198.556 1.63769 183.689 1.638 159.267 3.08983L3.26953 308.089H101.212V308.121C125.107 307.978 153.095 298.923 175.162 279.315C197.048 259.868 213.151 230.005 213.627 188.042C195.916 204.791 177.016 219.614 158.115 230.225C138.64 241.158 119.095 247.659 100.818 247.12L100.661 247.437L98.8711 246.544L99.3184 245.649L188.934 66.1709L189.827 64.3818L190.723 66.1689L230.506 145.577C237.723 140.338 245.227 135.795 254.377 133.003C263.572 130.198 274.37 129.177 288.143 130.917L221.513 3.08788ZM299.934 154.029C285.983 152.166 275.035 153.046 265.779 155.697C256.643 158.314 249.1 162.673 241.896 167.906L311.926 308.089H378.382L299.934 154.029Z" fill="url(#araGradS)"/></svg>
                   </div>
                   <div>
-                    <div style={{ fontSize:14, fontWeight:600, color:C.text }}>Ara</div>
-                    <div style={{ fontSize:12, color:C.sub, marginTop:1 }}>Clareza para sua vida financeira</div>
+                    <div style={{ fontSize:14, fontWeight:600, color:C.text }}>Ara Finance</div>
+                    <div style={{ fontSize:12, color:C.sub, marginTop:1 }}>Controle com clareza. Viva melhor</div>
                   </div>
                 </div>
                 <div style={{ fontSize:12, color:C.sub, background:C.surface, borderRadius:8, padding:"4px 10px", fontWeight:600 }}>v1.6.1</div>
               </div>
               <div style={{ padding:"12px 16px", borderBottom:"1px solid "+C.border, display:"flex", justifyContent:"space-between" }}>
                 <span style={{ fontSize:13, color:C.sub }}>Início do projeto</span>
-                <span style={{ fontSize:13, color:C.text }}>13 de Abril de 2026</span>
+                <span style={{ fontSize:13, color:C.text }}>11 de Abril de 2026</span>
               </div>
               <div style={{ padding:"12px 16px", display:"flex", justifyContent:"space-between", alignItems:"center" }}>
                 <span style={{ fontSize:13, color:C.sub }}>Desenvolvido por</span>
