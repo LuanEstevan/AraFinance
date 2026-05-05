@@ -138,6 +138,7 @@ export default function App() {
   const [transactions, setTransactions] = useState([]);
   const [accounts, setAccounts]         = useState([]);
   const [goals, setGoals]               = useState([]);
+  const [paidBills, setPaidBills]       = useState({}); // key: "accId-YYYY-MM"
   const [tab, setTab]                   = useState("dashboard");
   const [selectedMonth, setSelectedMonth] = useState(currentYM);
   const [nextTxId, setNextTxId]         = useState(1);
@@ -174,6 +175,7 @@ export default function App() {
           if (d.transactions) setTransactions(d.transactions);
           if (d.accounts)     setAccounts(d.accounts);
           if (d.goals)        setGoals(d.goals);
+          if (d.paidBills)    setPaidBills(d.paidBills);
           if (d.nextTxId)     setNextTxId(d.nextTxId);
           if (d.nextAccId)    setNextAccId(d.nextAccId);
           if (d.nextGoalId)   setNextGoalId(d.nextGoalId);
@@ -188,6 +190,7 @@ export default function App() {
           if (d.transactions) setTransactions(d.transactions);
           if (d.accounts)     setAccounts(d.accounts);
           if (d.goals)        setGoals(d.goals);
+          if (d.paidBills)    setPaidBills(d.paidBills);
           if (d.nextTxId)     setNextTxId(d.nextTxId);
           if (d.nextAccId)    setNextAccId(d.nextAccId);
           if (d.nextGoalId)   setNextGoalId(d.nextGoalId);
@@ -199,7 +202,25 @@ export default function App() {
   }, []);
 
   // useMemo hooks
-  const filtered = useMemo(() => transactions.filter(t => t.date && t.date.slice(0,7)===selectedMonth), [transactions, selectedMonth]);
+  const filtered = useMemo(() => {
+    return transactions.filter(t => {
+      if (!t.date) return false;
+      const acc = accounts.find(a=>String(a.id)===String(t.accountId));
+      if (acc && acc.kind==="card" && acc.closingDay) {
+        const [y,m,d] = t.date.split("-").map(Number);
+        const closingDay = parseInt(acc.closingDay);
+        let billingYM;
+        if (d >= closingDay) {
+          const next = new Date(y, m, 1);
+          billingYM = next.getFullYear()+"-"+String(next.getMonth()+1).padStart(2,"0");
+        } else {
+          billingYM = t.date.slice(0,7);
+        }
+        return billingYM === selectedMonth;
+      }
+      return t.date.slice(0,7) === selectedMonth;
+    });
+  }, [transactions, accounts, selectedMonth]);
   const totalIncome  = useMemo(() => filtered.filter(t=>t.type==="income").reduce((s,t)=>s+t.amount,0), [filtered]);
   const totalExpense = useMemo(() => filtered.filter(t=>t.type==="expense").reduce((s,t)=>s+t.amount,0), [filtered]);
   const balance      = useMemo(() => totalIncome - totalExpense, [totalIncome, totalExpense]);
@@ -227,15 +248,16 @@ export default function App() {
   const totalBankBalance = useMemo(() => banks.reduce((s,a)=>s+parseBR(a.balance),0), [banks]);
 
   // Save function
-  const saveData = useCallback(async (txs, accs, txId, accId, gls, gId) => {
+  const saveData = useCallback(async (txs, accs, txId, accId, gls, gId, paid) => {
     setSaving(true);
     const ts = new Date().toISOString();
-    const payload = JSON.stringify({ transactions:txs, accounts:accs, goals:gls, nextTxId:txId, nextAccId:accId, nextGoalId:gId, lastSaved:ts });
-    try { await window.storage.set("finanças-data", payload); } catch(e) {}
-    try { localStorage.setItem("finanças-data", payload); } catch(e) {}
+    const pb = paid !== undefined ? paid : paidBills;
+    const payload = JSON.stringify({ transactions:txs, accounts:accs, goals:gls, paidBills:pb, nextTxId:txId, nextAccId:accId, nextGoalId:gId, lastSaved:ts });
+    try { await window.storage.set("financas-data", payload); } catch(e) {}
+    try { localStorage.setItem("financas-data", payload); } catch(e) {}
     setLastSaved(new Date(ts));
     setSaving(false);
-  }, []);
+  }, [paidBills]);
 
   const prevMonth = useCallback(() => {
     const [y,m] = selectedMonth.split("-").map(Number);
@@ -258,24 +280,50 @@ export default function App() {
   const openEditAcc = useCallback((a) => setAccModal({ ...a, balance:String(a.balance), limit:String(a.limit||""), editId:a.id }), []);
 
   // Save transaction
-  const saveTx = async () => {
+  const saveTx = async (updateAll) => {
     const f = txModal;
     if (!f.description || !f.amount) return;
     const totalAmt  = parseBR(f.amount);
     const installments = parseInt(f.installments) || 1;
     let newTxs;
     let newId = nextTxId;
+
+    // Card closing day logic: date stays the same, billing month is adjusted in display
+    // No date modification needed - the billingMonth computed property handles display
+
     if (f.editId != null) {
-      newTxs = transactions.map(t => t.id===f.editId ? { ...f, id:f.editId, amount:totalAmt } : t);
+      if (updateAll && f.installmentGroup) {
+        newTxs = transactions.map(t => {
+          if (t.installmentGroup === f.installmentGroup) {
+            return { ...t, category:f.category, accountId:f.accountId };
+          }
+          if (t.id === f.editId) {
+            return { ...f, id:f.editId, amount:totalAmt };
+          }
+          return t;
+        });
+      } else {
+        newTxs = transactions.map(t => t.id===f.editId ? { ...f, id:f.editId, amount:totalAmt } : t);
+      }
     } else if (installments > 1) {
       const parcelAmt = totalAmt / installments;
       const [y,m,d] = f.date.split("-").map(Number);
       const generated = Array.from({ length:installments }, (_,i) => {
         const dd = new Date(y, m-1+i, d);
-        return { ...f, id:nextTxId+i, amount:parcelAmt, description:f.description+" "+(i+1)+"/"+installments, date:dd.getFullYear()+"-"+String(dd.getMonth()+1).padStart(2,"0")+"-"+String(dd.getDate()).padStart(2,"0"), installmentGroup:nextTxId, installmentIndex:i+1, installmentTotal:installments };
+        const rawDate = dd.getFullYear()+"-"+String(dd.getMonth()+1).padStart(2,"0")+"-"+String(dd.getDate()).padStart(2,"0");
+        return { ...f, id:nextTxId+i, amount:parcelAmt, description:f.description+" "+(i+1)+"/"+installments, date:rawDate, installmentGroup:nextTxId, installmentIndex:i+1, installmentTotal:installments, recurring:false };
       });
       newTxs = [...transactions, ...generated];
       newId  = nextTxId + installments;
+    } else if (f.recurring) {
+      // Generate 24 months of recurring transactions
+      const [y,m,d] = f.date.split("-").map(Number);
+      const generated = Array.from({ length:24 }, (_,i) => {
+        const dd = new Date(y, m-1+i, d);
+        return { ...f, id:nextTxId+i, amount:totalAmt, date:dd.getFullYear()+"-"+String(dd.getMonth()+1).padStart(2,"0")+"-"+String(dd.getDate()).padStart(2,"0"), recurringGroup:nextTxId };
+      });
+      newTxs = [...transactions, ...generated];
+      newId  = nextTxId + 24;
     } else {
       newTxs = [...transactions, { ...f, id:nextTxId, amount:totalAmt }];
       newId  = nextTxId + 1;
@@ -339,6 +387,13 @@ export default function App() {
     });
     setTransactions(newTxs); setAdvanceModal(null);
     await saveData(newTxs, accounts, nextTxId, nextAccId, goals, nextGoalId);
+  };
+
+  const togglePaidBill = async (accId, ym) => {
+    const key = accId+"-"+ym;
+    const newPaid = { ...paidBills, [key]: !paidBills[key] };
+    setPaidBills(newPaid);
+    await saveData(transactions, accounts, nextTxId, nextAccId, goals, nextGoalId, newPaid);
   };
 
   const saveGoal = async (f) => {
@@ -648,12 +703,31 @@ export default function App() {
                                 <div style={{ background:barC, borderRadius:6, height:5, width:pct+"%", transition:"width .3s" }} />
                               </div>
                               <div style={{ fontSize:10, color:C.sub, marginTop:4 }}>{pct.toFixed(0)}% comprometido - <span style={{ color:available>=0?C.green:C.red }}>{fmt(available)} disponível</span>{futureBill>0&&<span style={{ color:C.muted }}> (incl. {fmt(futureBill)} futuras)</span>}</div>
+                              {(a.closingDay||a.dueDay) && (
+                                <div style={{ display:"flex", gap:10, marginTop:6 }}>
+                                  {a.closingDay && <span style={{ fontSize:10, color:C.sub, background:C.muted+"44", borderRadius:6, padding:"2px 8px" }}>Fecha dia {a.closingDay}</span>}
+                                  {a.dueDay && <span style={{ fontSize:10, color:C.blue, background:C.blue+"22", borderRadius:6, padding:"2px 8px" }}>Vence dia {a.dueDay}</span>}
+                                </div>
+                              )}
                             </div>
                           ) : (
-                            <div style={{ fontSize:12, color:C.sub }}>Fatura: <span style={{ color:C.red }}>{fmt(spent)}</span></div>
+                            <div style={{ fontSize:12, color:C.sub }}>Fatura: <span style={{ color:C.red }}>{fmt(spent)}</span>
+                              {(a.closingDay||a.dueDay) && (
+                                <div style={{ display:"flex", gap:10, marginTop:6 }}>
+                                  {a.closingDay && <span style={{ fontSize:10, color:C.sub, background:C.muted+"44", borderRadius:6, padding:"2px 8px" }}>Fecha dia {a.closingDay}</span>}
+                                  {a.dueDay && <span style={{ fontSize:10, color:C.blue, background:C.blue+"22", borderRadius:6, padding:"2px 8px" }}>Vence dia {a.dueDay}</span>}
+                                </div>
+                              )}
+                            </div>
                           )}
                         </div>
                         <div style={{ display:"flex", flexDirection:"column", alignItems:"flex-end", justifyContent:"center", marginLeft:12 }}>
+                          {paidBills[a.id+"-"+selectedMonth] && (
+                            <div style={{ background:C.green+"22", borderRadius:8, padding:"2px 8px", marginBottom:4, display:"flex", alignItems:"center", gap:4 }}>
+                              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke={C.green} strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                              <span style={{ fontSize:10, color:C.green, fontWeight:700 }}>Pago</span>
+                            </div>
+                          )}
                           <div style={{ color:C.sub, fontSize:16 }}>&#8250;</div>
                         </div>
                       </div>
@@ -804,7 +878,10 @@ export default function App() {
                     <CatIcon name={(cat||{}).icon||"other"} color={catColor} size={18} />
                   </div>
                   <div style={{ flex:1, minWidth:0 }}>
-                    <div style={{ fontWeight:600, fontSize:14, color:C.text, whiteSpace:"nowrap", overflow:"hidden", textOverflow:"ellipsis" }}>{t.description}</div>
+                    <div style={{ fontWeight:600, fontSize:14, color:C.text, whiteSpace:"nowrap", overflow:"hidden", textOverflow:"ellipsis", display:"flex", alignItems:"center", gap:6 }}>
+                      {t.description}
+                      {t.recurring && <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke={C.blue} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>}
+                    </div>
                     <div style={{ fontSize:11, color:C.sub, marginTop:2 }}>
                       {catLabel(t.category)} - {t.date.split("-").reverse().join("/")}
                       {acc && <span style={{ color:ACCOUNT_COLORS[acc.colorIdx%ACCOUNT_COLORS.length] }}> - {acc.name}</span>}
@@ -896,11 +973,29 @@ export default function App() {
               <div style={{ background:C.card, borderRadius:12, padding:14 }}>
                 <div style={{ fontSize:12, color:C.sub, marginBottom:10 }}>Parcelamento</div>
                 <div style={{ display:"flex", gap:10, alignItems:"center" }}>
-                  <button onClick={()=>setTxModal(f=>({ ...f, installments:Math.max(1,(parseInt(f.installments)||1)-1) }))} style={{ background:C.muted, border:"none", color:C.text, borderRadius:10, width:36, height:36, cursor:"pointer", fontSize:18 }}>-</button>
+                  <button onClick={()=>setTxModal(f=>({ ...f, installments:Math.max(1,(parseInt(f.installments)||1)-1), recurring:false }))} style={{ background:C.muted, border:"none", color:C.text, borderRadius:10, width:36, height:36, cursor:"pointer", fontSize:18 }}>-</button>
                   <div style={{ flex:1, textAlign:"center", color:C.text, fontWeight:700, fontSize:15 }}>
                     {(parseInt(txModal.installments)||1)===1?"À vista":(parseInt(txModal.installments)||1)+"x de "+fmt(parseBR(txModal.amount)/(parseInt(txModal.installments)||1))}
                   </div>
-                  <button onClick={()=>setTxModal(f=>({ ...f, installments:Math.min(48,(parseInt(f.installments)||1)+1) }))} style={{ background:C.muted, border:"none", color:C.text, borderRadius:10, width:36, height:36, cursor:"pointer", fontSize:18 }}>+</button>
+                  <button onClick={()=>setTxModal(f=>({ ...f, installments:Math.min(48,(parseInt(f.installments)||1)+1), recurring:false }))} style={{ background:C.muted, border:"none", color:C.text, borderRadius:10, width:36, height:36, cursor:"pointer", fontSize:18 }}>+</button>
+                </div>
+              </div>
+            )}
+
+            {/* Recorrente — só para À vista */}
+            {txModal.editId==null && (parseInt(txModal.installments)||1)===1 && (
+              <div onClick={()=>setTxModal(f=>({ ...f, recurring:!f.recurring }))} style={{ background:C.card, borderRadius:12, padding:"12px 14px", display:"flex", alignItems:"center", justifyContent:"space-between", cursor:"pointer", border:"1px solid "+(txModal.recurring?C.blue+"66":C.border) }}>
+                <div style={{ display:"flex", alignItems:"center", gap:10 }}>
+                  <div style={{ width:32, height:32, borderRadius:8, background:txModal.recurring?C.blue+"22":C.muted+"33", display:"flex", alignItems:"center", justifyContent:"center" }}>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={txModal.recurring?C.blue:C.sub} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+                  </div>
+                  <div>
+                    <div style={{ fontSize:13, fontWeight:600, color:txModal.recurring?C.blue:C.text }}>Gasto recorrente</div>
+                    <div style={{ fontSize:11, color:C.sub, marginTop:1 }}>Repete todo mês automaticamente</div>
+                  </div>
+                </div>
+                <div style={{ width:22, height:22, borderRadius:6, border:"2px solid "+(txModal.recurring?C.blue:C.border), background:txModal.recurring?C.blue:"transparent", display:"flex", alignItems:"center", justifyContent:"center" }}>
+                  {txModal.recurring && <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>}
                 </div>
               </div>
             )}
@@ -916,7 +1011,14 @@ export default function App() {
               <div style={{ fontSize:12, color:C.sub, marginBottom:6 }}>Data</div>
               <input type="date" style={{ ...iStyle }} value={txModal.date} onChange={e=>setTxModal(f=>({ ...f, date:e.target.value }))} />
             </div>
-            <button onClick={saveTx} style={btn("#f1f5f9")}>{txModal.editId!=null?"Salvar alterações":"Adicionar lançamento"}</button>
+            <button onClick={()=>saveTx(true)} style={btn("#f1f5f9")}>{txModal.editId!=null?"Salvar alterações":"Adicionar lançamento"}</button>
+            {txModal.editId!=null && txModal.recurringGroup && (
+              <button onClick={async()=>{
+                const newTxs = transactions.filter(t=>!(t.recurringGroup===txModal.recurringGroup && t.date>=txModal.date));
+                setTransactions(newTxs); setTxModal(null);
+                await saveData(newTxs, accounts, nextTxId, nextAccId, goals, nextGoalId);
+              }} style={btn("none",{ border:"1px solid #f59e0b44", color:"#f59e0b" })}>Cancelar recorrência daqui em diante</button>
+            )}
             {txModal.editId!=null && <button onClick={async()=>{ await deleteTx(txModal.editId); }} style={btn("none",{ border:"1px solid "+C.red+"44", color:C.red })}>Remover lançamento</button>}
           </div>
         </Modal>
@@ -940,6 +1042,18 @@ export default function App() {
             <input style={iStyle} placeholder="Nome (ex: Nubank, Bradesco...)" value={accModal.name} onChange={e=>setAccModal(f=>({ ...f, name:e.target.value }))} />
             {accModal.kind==="bank" && <input style={iStyle} placeholder="Saldo atual" type="text" inputMode="decimal" value={accModal.balance} onChange={e=>setAccModal(f=>({ ...f, balance:e.target.value }))} />}
             {accModal.kind==="card" && <input style={iStyle} placeholder="Limite total (opcional)" type="text" inputMode="decimal" value={accModal.limit} onChange={e=>setAccModal(f=>({ ...f, limit:e.target.value }))} />}
+            {accModal.kind==="card" && (
+              <div style={{ display:"flex", gap:10 }}>
+                <div style={{ flex:1 }}>
+                  <div style={{ fontSize:12, color:C.sub, marginBottom:6 }}>Fechamento (dia)</div>
+                  <input style={iStyle} placeholder="Ex: 15" type="text" inputMode="numeric" value={accModal.closingDay||""} onChange={e=>setAccModal(f=>({ ...f, closingDay:e.target.value.replace(/\D/g,"") }))} />
+                </div>
+                <div style={{ flex:1 }}>
+                  <div style={{ fontSize:12, color:C.sub, marginBottom:6 }}>Vencimento (dia)</div>
+                  <input style={iStyle} placeholder="Ex: 22" type="text" inputMode="numeric" value={accModal.dueDay||""} onChange={e=>setAccModal(f=>({ ...f, dueDay:e.target.value.replace(/\D/g,"") }))} />
+                </div>
+              </div>
+            )}
             <div>
               <div style={{ fontSize:12, color:C.sub, marginBottom:4 }}>Cor</div>
               <div style={{ display:"flex", gap:8, flexWrap:"wrap" }}>
@@ -1122,9 +1236,30 @@ export default function App() {
               <div style={{ flex:1 }}>
                 <div style={{ fontSize:18, fontWeight:700, color:C.text }}>{accDetail.name}</div>
                 <div style={{ fontSize:12, color:C.sub, marginTop:2 }}>{accDetail.kind==="bank"?"Conta bancária":"Cartão de crédito"} - {monthLabel(selectedMonth)} - {monthTxs.length} lançamentos</div>
+                {accDetail.kind==="card" && (accDetail.closingDay||accDetail.dueDay) && (
+                  <div style={{ display:"flex", gap:8, marginTop:6 }}>
+                    {accDetail.closingDay && <span style={{ fontSize:11, color:C.sub, background:C.muted+"44", borderRadius:6, padding:"2px 10px" }}>Fecha dia {accDetail.closingDay}</span>}
+                    {accDetail.dueDay && <span style={{ fontSize:11, color:C.blue, background:C.blue+"22", borderRadius:6, padding:"2px 10px" }}>Vence dia {accDetail.dueDay}</span>}
+                  </div>
+                )}
               </div>
               <button onClick={()=>{ setAccDetail(null); openEditAcc(accDetail); }} style={{ background:C.card, border:"1px solid "+C.border, color:C.sub, borderRadius:10, padding:"6px 12px", cursor:"pointer", fontSize:12 }}>editar</button>
             </div>
+            {accDetail.kind==="card" && (
+              <button onClick={()=>togglePaidBill(accDetail.id, selectedMonth)} style={{ width:"100%", marginBottom:16, padding:"12px", borderRadius:12, border:"none", cursor:"pointer", background:paidBills[accDetail.id+"-"+selectedMonth]?C.green+"22":"#1e3a5f33", display:"flex", alignItems:"center", justifyContent:"center", gap:8 }}>
+                {paidBills[accDetail.id+"-"+selectedMonth] ? (
+                  <>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={C.green} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                    <span style={{ fontSize:14, fontWeight:700, color:C.green }}>Fatura paga</span>
+                  </>
+                ) : (
+                  <>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={C.sub} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                    <span style={{ fontSize:14, fontWeight:600, color:C.sub }}>Marcar fatura como paga</span>
+                  </>
+                )}
+              </button>
+            )}
             <div style={{ display:"flex", gap:10, marginBottom:20 }}>
               <div style={{ flex:1, background:C.card, borderRadius:12, padding:"12px 14px", borderTop:"3px solid "+C.red }}>
                 <div style={{ fontSize:11, color:C.sub }}>Gastos</div>
