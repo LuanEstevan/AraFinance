@@ -328,9 +328,9 @@ export default function App() {
       newTxs = [...transactions, { ...f, id:nextTxId, amount:totalAmt }];
       newId  = nextTxId + 1;
     }
-    // Update bank balance
+    // Update bank balance — only for non-recurring (recurring doesn't auto-update balance)
     let newAccs = accounts;
-    if (f.editId==null && f.accountId && f.kind!=="card") {
+    if (f.editId==null && f.accountId && !f.recurring) {
       newAccs = accounts.map(a => {
         if (String(a.id)===String(f.accountId) && a.kind==="bank") {
           return { ...a, balance: parseBR(a.balance) + (f.type==="income" ? totalAmt : -totalAmt) };
@@ -387,6 +387,19 @@ export default function App() {
     });
     setTransactions(newTxs); setAdvanceModal(null);
     await saveData(newTxs, accounts, nextTxId, nextAccId, goals, nextGoalId);
+  };
+
+  const recalcBankBalance = async () => {
+    const today = new Date().toISOString().slice(0,10);
+    const newAccs = accounts.map(a => {
+      if (a.kind !== "bank") return a;
+      const txTotal = transactions
+        .filter(t => String(t.accountId)===String(a.id) && !t.recurringGroup && t.date<=today)
+        .reduce((s,t) => t.type==="income" ? s+t.amount : s-t.amount, 0);
+      return { ...a, balance: txTotal };
+    });
+    setAccounts(newAccs);
+    await saveData(transactions, newAccs, nextTxId, nextAccId, goals, nextGoalId);
   };
 
   const togglePaidBill = async (accId, ym) => {
@@ -677,7 +690,7 @@ export default function App() {
                 {cards.map(a => {
                   const spent   = spendByAccount[a.id]||0;
                   const limit   = parseBR(a.limit);
-                  const futureBill = transactions.filter(t=>String(t.accountId)===String(a.id)&&t.type==="expense"&&t.date.slice(0,7)>selectedMonth).reduce((s,t)=>s+t.amount,0);
+                  const futureBill = transactions.filter(t=>String(t.accountId)===String(a.id)&&t.type==="expense"&&t.date.slice(0,7)>selectedMonth&&t.installmentGroup&&!t.recurringGroup).reduce((s,t)=>s+t.amount,0);
                   const committed  = spent + futureBill;
                   const available  = limit - committed;
                   const pct        = limit>0 ? Math.min((committed/limit)*100,100) : 0;
@@ -1073,7 +1086,7 @@ export default function App() {
           <div style={{ marginBottom:24 }}>
             <div style={{ fontSize:11, fontWeight:600, color:C.sub, textTransform:"uppercase", letterSpacing:1, marginBottom:10 }}>Status</div>
             <div style={{ background:C.card, borderRadius:14 }}>
-              <div style={{ display:"flex", alignItems:"center", gap:14, padding:"14px 16px" }}>
+              <div style={{ display:"flex", alignItems:"center", gap:14, padding:"14px 16px", borderBottom:"1px solid "+C.border }}>
                 <div style={{ width:38, height:38, borderRadius:10, background:saving?"#1e3a5f33":lastSaved?"#14532d33":"#37415133", display:"flex", alignItems:"center", justifyContent:"center" }}>
                   {saving
                     ? <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={C.blue} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-.18-3.32"/></svg>
@@ -1086,6 +1099,12 @@ export default function App() {
                   <div style={{ fontSize:14, fontWeight:600, color:C.text }}>{saving?"Salvando...":lastSaved?"Dados salvos":"Sem dados salvos"}</div>
                   <div style={{ fontSize:12, color:lastSaved?C.green:C.sub, marginTop:2 }}>{lastSaved?fmtDate(lastSaved):"Adicione dados para salvar"}</div>
                 </div>
+              </div>
+              <div style={{ padding:"12px 16px" }}>
+                <button onClick={recalcBankBalance} style={{ width:"100%", background:"#1e3a5f33", border:"1px solid "+C.blue+"44", color:C.blue, borderRadius:10, padding:"10px", cursor:"pointer", fontSize:13, fontWeight:600, display:"flex", alignItems:"center", justifyContent:"center", gap:8 }}>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+                  Recalcular saldo dos bancos
+                </button>
               </div>
             </div>
           </div>
@@ -1273,7 +1292,7 @@ export default function App() {
               )}
               {accDetail.kind==="card" && parseBR(accDetail.limit)>0 && (()=>{
                 const limit = parseBR(accDetail.limit);
-                const futureBill = transactions.filter(t=>String(t.accountId)===String(accDetail.id)&&t.type==="expense"&&t.date.slice(0,7)>selectedMonth).reduce((s,t)=>s+t.amount,0);
+                const futureBill = transactions.filter(t=>String(t.accountId)===String(accDetail.id)&&t.type==="expense"&&t.date.slice(0,7)>selectedMonth&&t.installmentGroup&&!t.recurringGroup).reduce((s,t)=>s+t.amount,0);
                 const available = limit - monthSpend - futureBill;
                 return (
                   <div style={{ flex:1, background:C.card, borderRadius:12, padding:"12px 14px", borderTop:"3px solid "+(available>=0?C.blue:C.red) }}>
