@@ -118,8 +118,8 @@ const decompress = (str) => {
 // -- Modal component (module-level) ---------------------------
 function Modal({ title, onClose, children }) {
   return (
-    <div style={{ position:"fixed", inset:0, background:"#000000bb", zIndex:100, display:"flex", alignItems:"flex-end" }} onClick={onClose}>
-      <div style={{ background:C.surface, borderRadius:"20px 20px 0 0", width:"100%", maxHeight:"90vh", overflowY:"auto", padding:"16px 16px 40px" }} onClick={e=>e.stopPropagation()}>
+    <div className="modal-backdrop" style={{ position:"fixed", inset:0, background:"#000000bb", zIndex:100, display:"flex", alignItems:"flex-end" }} onClick={onClose}>
+      <div className="modal-sheet" style={{ background:C.surface, borderRadius:"20px 20px 0 0", width:"100%", maxHeight:"90vh", overflowY:"auto", padding:"16px 16px 40px" }} onClick={e=>e.stopPropagation()}>
         <div style={{ width:36, height:4, background:C.muted, borderRadius:2, margin:"0 auto 16px" }} />
         {title && <div style={{ fontSize:18, fontWeight:700, color:C.text, marginBottom:16 }}>{title}</div>}
         {children}
@@ -202,23 +202,23 @@ export default function App() {
   }, []);
 
   // useMemo hooks
+  const getBillingYM = (dateStr, accountId) => {
+    const acc = accounts.find(a=>String(a.id)===String(accountId));
+    if (!acc || acc.kind!=="card" || !acc.closingDay) return dateStr.slice(0,7);
+    const [y,m,d] = dateStr.split("-").map(Number);
+    const closingDay = parseInt(acc.closingDay, 10);
+    if (isNaN(closingDay) || closingDay <= 0) return dateStr.slice(0,7);
+    if (d >= closingDay) {
+      const next = new Date(y, m, 1); // first of next month
+      return next.getFullYear()+"-"+String(next.getMonth()+1).padStart(2,"0");
+    }
+    return dateStr.slice(0,7);
+  };
+
   const filtered = useMemo(() => {
     return transactions.filter(t => {
       if (!t.date) return false;
-      const acc = accounts.find(a=>String(a.id)===String(t.accountId));
-      if (acc && acc.kind==="card" && acc.closingDay) {
-        const [y,m,d] = t.date.split("-").map(Number);
-        const closingDay = parseInt(acc.closingDay);
-        let billingYM;
-        if (d >= closingDay) {
-          const next = new Date(y, m, 1);
-          billingYM = next.getFullYear()+"-"+String(next.getMonth()+1).padStart(2,"0");
-        } else {
-          billingYM = t.date.slice(0,7);
-        }
-        return billingYM === selectedMonth;
-      }
-      return t.date.slice(0,7) === selectedMonth;
+      return getBillingYM(t.date, t.accountId) === selectedMonth;
     });
   }, [transactions, accounts, selectedMonth]);
   const totalIncome  = useMemo(() => filtered.filter(t=>t.type==="income").reduce((s,t)=>s+t.amount,0), [filtered]);
@@ -464,6 +464,38 @@ export default function App() {
 
   return (
     <div style={{ minHeight:"100vh", background:C.bg, color:C.text, fontFamily:"system-ui, sans-serif", paddingBottom:80 }}>
+      <style>{`
+        @keyframes fadeUp {
+          from { opacity: 0; transform: translateY(12px); }
+          to   { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes fadeIn {
+          from { opacity: 0; }
+          to   { opacity: 1; }
+        }
+        @keyframes slideUp {
+          from { transform: translateY(100%); opacity: 0; }
+          to   { transform: translateY(0);   opacity: 1; }
+        }
+        @keyframes scaleIn {
+          from { opacity: 0; transform: scale(0.97); }
+          to   { opacity: 1; transform: scale(1); }
+        }
+        .tab-content {
+          animation: fadeUp 0.22s ease both;
+        }
+        .modal-sheet {
+          animation: slideUp 0.28s cubic-bezier(0.32,0.72,0,1) both;
+        }
+        .modal-backdrop {
+          animation: fadeIn 0.2s ease both;
+        }
+        .card-item {
+          animation: fadeUp 0.2s ease both;
+        }
+        button { -webkit-tap-highlight-color: transparent; }
+        * { -webkit-font-smoothing: antialiased; }
+      `}</style>
 
       {/* Header */}
       <div style={{ padding:"20px 20px 16px", background:"linear-gradient(180deg, #0d1424 0%, "+C.bg+" 100%)" }}>
@@ -558,7 +590,7 @@ export default function App() {
       </div>
 
       {/* Tab content */}
-      <div style={{ padding:"16px 16px 0" }}>
+      <div key={tab} className="tab-content" style={{ padding:"16px 16px 0" }}>
 
         {/* DASHBOARD */}
         {tab==="dashboard" && (
@@ -980,7 +1012,7 @@ export default function App() {
             ))}
           </div>
           <div style={{ display:"flex", flexDirection:"column", gap:12 }}>
-            <input style={iStyle} placeholder="Descricao" value={txModal.description} onChange={e=>setTxModal(f=>({ ...f, description:e.target.value }))} />
+            <input style={iStyle} placeholder="Descrição" value={txModal.description} onChange={e=>setTxModal(f=>({ ...f, description:e.target.value }))} />
             <input style={iStyle} placeholder={txModal.type==="expense" ? "Valor (valor total para parcelas)" : "Valor total"} type="text" inputMode="decimal" value={txModal.amount} onChange={e=>setTxModal(f=>({ ...f, amount:e.target.value }))} />
             {txModal.type==="expense"&&txModal.editId==null && (
               <div style={{ background:C.card, borderRadius:12, padding:14 }}>
@@ -1245,7 +1277,7 @@ export default function App() {
       {accDetail && (()=>{
         const brand   = getBrand(accDetail.name);
         const ac      = brand ? brand.color : ACCOUNT_COLORS[accDetail.colorIdx%ACCOUNT_COLORS.length];
-        const monthTxs = transactions.filter(t=>String(t.accountId)===String(accDetail.id)&&t.date.slice(0,7)===selectedMonth).sort((a,b)=>b.date.localeCompare(a.date));
+        const monthTxs = transactions.filter(t=>String(t.accountId)===String(accDetail.id)&&getBillingYM(t.date, t.accountId)===selectedMonth).sort((a,b)=>b.date.localeCompare(a.date));
         const monthSpend = monthTxs.filter(t=>t.type==="expense").reduce((s,t)=>s+t.amount,0);
         const monthIncome= monthTxs.filter(t=>t.type==="income").reduce((s,t)=>s+t.amount,0);
         return (
