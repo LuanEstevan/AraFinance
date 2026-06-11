@@ -1,5 +1,11 @@
 import { useState, useMemo, useEffect, useCallback } from "react";
 import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
+import { createClient } from "@supabase/supabase-js";
+
+// -- Supabase --------------------------------------------------
+const SUPA_URL = "https://nafgucdgqqxenzqngpwh.supabase.co";
+const SUPA_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5hZmd1Y2RncXF4ZW56cW5ncHdoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA1OTczNTcsImV4cCI6MjA5NjE3MzM1N30._iCdDLlI0TD5A0MBnvoRab3qgvWSGVeeWua_9LM-FTo";
+const supabase = createClient(SUPA_URL, SUPA_KEY);
 
 // -- Categories ------------------------------------------------
 const EXPENSE_CATS = [
@@ -134,6 +140,15 @@ export default function App() {
   const currentYM = now.getFullYear()+"-"+String(now.getMonth()+1).padStart(2,"0");
   const todayStr  = now.getFullYear()+"-"+String(now.getMonth()+1).padStart(2,"0")+"-"+String(now.getDate()).padStart(2,"0");
 
+  // Auth state
+  const [user, setUser] = useState(null);
+  const [authLoading, setAuthLoading] = useState(true);
+  const [authView, setAuthView] = useState("login"); // "login" | "register"
+  const [authEmail, setAuthEmail] = useState("");
+  const [authPassword, setAuthPassword] = useState("");
+  const [authError, setAuthError] = useState("");
+  const [authWorking, setAuthWorking] = useState(false);
+
   // All useState hooks first
   const [transactions, setTransactions] = useState([]);
   const [accounts, setAccounts]         = useState([]);
@@ -166,40 +181,42 @@ export default function App() {
     meta.content = "width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no";
   }, []);
 
+  // Auth listener
   useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setUser(session?.user ?? null);
+      setAuthLoading(false);
+    });
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null);
+    });
+    return () => subscription.unsubscribe();
+  }, []);
+
+  // Load data from Supabase when user logs in
+  useEffect(() => {
+    if (!user) return;
     (async () => {
+      setLoading(true);
       try {
-        const r = await window.storage.get("finanças-data");
-        if (r && r.value) {
-          const d = JSON.parse(r.value);
-          if (d.transactions) setTransactions(d.transactions);
-          if (d.accounts)     setAccounts(d.accounts);
-          if (d.goals)        setGoals(d.goals);
-          if (d.paidBills)    setPaidBills(d.paidBills);
-          if (d.nextTxId)     setNextTxId(d.nextTxId);
-          if (d.nextAccId)    setNextAccId(d.nextAccId);
-          if (d.nextGoalId)   setNextGoalId(d.nextGoalId);
-          if (d.lastSaved)    setLastSaved(new Date(d.lastSaved));
-          setLoading(false); return;
-        }
-      } catch(e) {}
-      try {
-        const r2 = localStorage.getItem("finanças-data");
-        if (r2) {
-          const d = JSON.parse(r2);
-          if (d.transactions) setTransactions(d.transactions);
-          if (d.accounts)     setAccounts(d.accounts);
-          if (d.goals)        setGoals(d.goals);
-          if (d.paidBills)    setPaidBills(d.paidBills);
-          if (d.nextTxId)     setNextTxId(d.nextTxId);
-          if (d.nextAccId)    setNextAccId(d.nextAccId);
-          if (d.nextGoalId)   setNextGoalId(d.nextGoalId);
-          if (d.lastSaved)    setLastSaved(new Date(d.lastSaved));
+        const { data, error } = await supabase
+          .from("user_data")
+          .select("*")
+          .eq("id", user.id)
+          .single();
+        if (data && !error) {
+          if (data.transactions)  setTransactions(data.transactions);
+          if (data.accounts)      setAccounts(data.accounts);
+          if (data.goals)         setGoals(data.goals);
+          if (data.paid_bills)    setPaidBills(data.paid_bills);
+          if (data.next_tx_id)    setNextTxId(data.next_tx_id);
+          if (data.next_acc_id)   setNextAccId(data.next_acc_id);
+          if (data.next_goal_id)  setNextGoalId(data.next_goal_id);
         }
       } catch(e) {}
       setLoading(false);
     })();
-  }, []);
+  }, [user]);
 
   // useMemo hooks
   const getBillingYM = (dateStr, accountId) => {
@@ -249,15 +266,25 @@ export default function App() {
 
   // Save function
   const saveData = useCallback(async (txs, accs, txId, accId, gls, gId, paid) => {
+    if (!user) return;
     setSaving(true);
-    const ts = new Date().toISOString();
     const pb = paid !== undefined ? paid : paidBills;
-    const payload = JSON.stringify({ transactions:txs, accounts:accs, goals:gls, paidBills:pb, nextTxId:txId, nextAccId:accId, nextGoalId:gId, lastSaved:ts });
-    try { await window.storage.set("financas-data", payload); } catch(e) {}
-    try { localStorage.setItem("financas-data", payload); } catch(e) {}
-    setLastSaved(new Date(ts));
+    try {
+      await supabase.from("user_data").upsert({
+        id: user.id,
+        transactions: txs,
+        accounts: accs,
+        goals: gls,
+        paid_bills: pb,
+        next_tx_id: txId,
+        next_acc_id: accId,
+        next_goal_id: gId,
+        updated_at: new Date().toISOString()
+      });
+      setLastSaved(new Date());
+    } catch(e) {}
     setSaving(false);
-  }, [paidBills]);
+  }, [user, paidBills]);
 
   const prevMonth = useCallback(() => {
     const [y,m] = selectedMonth.split("-").map(Number);
@@ -450,9 +477,69 @@ export default function App() {
   };
 
   // -- Render -------------------------------------------------
-  if (loading) return (
+  const signIn = async () => {
+    setAuthError(""); setAuthWorking(true);
+    const { error } = await supabase.auth.signInWithPassword({ email: authEmail, password: authPassword });
+    if (error) setAuthError(error.message);
+    setAuthWorking(false);
+  };
+
+  const signUp = async () => {
+    setAuthError(""); setAuthWorking(true);
+    const { error } = await supabase.auth.signUp({ email: authEmail, password: authPassword });
+    if (error) setAuthError(error.message);
+    else setAuthError("Verifique seu email para confirmar o cadastro!");
+    setAuthWorking(false);
+  };
+
+  const signOut = async () => {
+    await supabase.auth.signOut();
+    setTransactions([]); setAccounts([]); setGoals([]);
+    setPaidBills({}); setNextTxId(1); setNextAccId(1); setNextGoalId(1);
+  };
+
+  // Auth loading
+  if (authLoading) return (
+    <div style={{ minHeight:"100vh", background:C.bg, display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", gap:12 }}>
+      <svg width="60" height="60" viewBox="0 0 376 307" fill="none"><defs><linearGradient id="gA" x1="375.369" y1="305.624" x2="0.369139" y2="-0.37599" gradientUnits="userSpaceOnUse"><stop stopColor="#7C3AED"/><stop offset="0.5" stopColor="#2563EB"/><stop offset="1" stopColor="#1E40AF"/></linearGradient><linearGradient id="gB" x1="375.369" y1="305.624" x2="0.369139" y2="-0.37599" gradientUnits="userSpaceOnUse"><stop stopColor="#7C3AED"/><stop offset="0.5" stopColor="#2563EB"/><stop offset="1" stopColor="#1E40AF"/></linearGradient></defs><path fillRule="evenodd" clipRule="evenodd" d="M218.243 1.08728C195.286 -0.36291 180.42 -0.362596 155.997 1.08924L0 306.088H97.9424V306.12C121.838 305.978 149.826 296.923 171.893 277.315C193.779 257.867 209.881 228.004 210.357 186.041C192.647 202.79 173.746 217.613 154.846 228.224C135.371 239.157 115.825 245.658 97.5488 245.12L95.8691 245.124C96.4549 245.319 95.2834 244.929 95.8691 245.124C95.2834 244.929 186.558 62.3812 186.558 62.3812L227.236 143.577C234.454 138.337 241.957 133.794 251.107 131.002C260.302 128.197 271.1 127.176 284.873 128.916L218.243 1.08728Z" fill="url(#gA)"/><path fillRule="evenodd" clipRule="evenodd" d="M296.664 152.029C282.713 150.165 271.765 151.046 262.51 153.697C253.373 156.314 245.83 160.672 238.627 165.906L308.656 306.088H375.112L296.664 152.029Z" fill="url(#gB)"/></svg>
+      <div style={{ fontSize:22, fontWeight:800, color:C.text }}>Ara Finance</div>
+    </div>
+  );
+
+  // Login / Register screen
+  if (!user) return (
+    <div style={{ minHeight:"100vh", background:C.bg, display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", padding:"32px 24px", color:C.text }}>
+      <svg width="72" height="72" viewBox="0 0 376 307" fill="none" style={{ marginBottom:16 }}><defs><linearGradient id="gL1" x1="375.369" y1="305.624" x2="0.369139" y2="-0.37599" gradientUnits="userSpaceOnUse"><stop stopColor="#7C3AED"/><stop offset="0.5" stopColor="#2563EB"/><stop offset="1" stopColor="#1E40AF"/></linearGradient><linearGradient id="gL2" x1="375.369" y1="305.624" x2="0.369139" y2="-0.37599" gradientUnits="userSpaceOnUse"><stop stopColor="#7C3AED"/><stop offset="0.5" stopColor="#2563EB"/><stop offset="1" stopColor="#1E40AF"/></linearGradient></defs><path fillRule="evenodd" clipRule="evenodd" d="M218.243 1.08728C195.286 -0.36291 180.42 -0.362596 155.997 1.08924L0 306.088H97.9424V306.12C121.838 305.978 149.826 296.923 171.893 277.315C193.779 257.867 209.881 228.004 210.357 186.041C192.647 202.79 173.746 217.613 154.846 228.224C135.371 239.157 115.825 245.658 97.5488 245.12L95.8691 245.124C96.4549 245.319 95.2834 244.929 95.8691 245.124C95.2834 244.929 186.558 62.3812 186.558 62.3812L227.236 143.577C234.454 138.337 241.957 133.794 251.107 131.002C260.302 128.197 271.1 127.176 284.873 128.916L218.243 1.08728Z" fill="url(#gL1)"/><path fillRule="evenodd" clipRule="evenodd" d="M296.664 152.029C282.713 150.165 271.765 151.046 262.51 153.697C253.373 156.314 245.83 160.672 238.627 165.906L308.656 306.088H375.112L296.664 152.029Z" fill="url(#gL2)"/></svg>
+      <div style={{ fontSize:28, fontWeight:800, color:C.text, marginBottom:4 }}>Ara Finance</div>
+      <div style={{ fontSize:14, color:C.sub, marginBottom:40 }}>Controle com clareza. Viva melhor.</div>
+
+      <div style={{ width:"100%", maxWidth:380 }}>
+        <div style={{ display:"flex", background:C.card, borderRadius:12, padding:4, marginBottom:24 }}>
+          <button onClick={()=>{ setAuthView("login"); setAuthError(""); }} style={{ flex:1, padding:"10px", borderRadius:10, border:"none", cursor:"pointer", fontSize:14, fontWeight:600, background:authView==="login"?C.surface:"transparent", color:authView==="login"?C.text:C.sub }}>Entrar</button>
+          <button onClick={()=>{ setAuthView("register"); setAuthError(""); }} style={{ flex:1, padding:"10px", borderRadius:10, border:"none", cursor:"pointer", fontSize:14, fontWeight:600, background:authView==="register"?C.surface:"transparent", color:authView==="register"?C.text:C.sub }}>Criar conta</button>
+        </div>
+
+        <div style={{ display:"flex", flexDirection:"column", gap:12 }}>
+          <input style={{ ...iStyle }} placeholder="Email" type="email" inputMode="email" value={authEmail} onChange={e=>setAuthEmail(e.target.value)} />
+          <input style={{ ...iStyle }} placeholder="Senha" type="password" value={authPassword} onChange={e=>setAuthPassword(e.target.value)} />
+
+          {authError && (
+            <div style={{ fontSize:13, color:authError.includes("Verifique")?C.green:C.red, background:authError.includes("Verifique")?"#14532d33":"#7f1d1d33", borderRadius:10, padding:"10px 14px" }}>
+              {authError}
+            </div>
+          )}
+
+          <button onClick={authView==="login"?signIn:signUp} disabled={authWorking} style={btn("linear-gradient(135deg,#7C3AED,#2563EB)")}>
+            {authWorking ? "Aguarde..." : authView==="login" ? "Entrar" : "Criar conta"}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+
+
     <div style={{ minHeight:"100vh", background:C.bg, display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", color:C.text, gap:12 }}>
-      <svg width="90" height="90" viewBox="0 0 382 311" fill="none" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="araGrad" x1="0" y1="0" x2="382" y2="311" gradientUnits="userSpaceOnUse"><stop offset="0%" stopColor="#2563EB"/><stop offset="100%" stopColor="#7C3AED"/></linearGradient></defs><path d="M158.852 1.11034C183.628 -0.369723 198.625 -0.370178 221.923 1.10936L222.563 0.776355L222.765 1.1621L223.2 1.19042L223.154 1.91014L290.525 131.163L290.567 131.244L290.768 131.272L290.728 131.552L290.987 132.05L290.633 132.234L290.49 133.254L289.5 133.115C275.182 131.114 264.194 132.098 254.961 134.915C245.998 137.65 238.628 142.13 231.414 147.389L231.498 147.556L230.507 148.052L229.943 148.468L229.871 148.37L229.71 148.452L229.262 147.558L229.238 147.511L228.757 146.857L228.869 146.774L189.83 68.8525L101.807 245.142C119.322 245.423 138.168 239.129 157.136 228.48C176.345 217.697 195.608 202.486 213.639 185.271V185.125H213.793C214.035 184.893 214.279 184.663 214.521 184.431L215.187 185.125H215.639V185.596L215.905 185.874C215.817 185.959 215.726 186.043 215.638 186.128C215.637 229.654 199.147 260.677 176.49 280.81C153.859 300.919 125.119 310.125 100.639 310.125H99.6387V310.089H0L0.744141 308.634L157.624 1.91112L157.581 1.18651L158.008 1.16014L158.203 0.779285L158.852 1.11034ZM265.229 153.774C274.968 150.985 286.439 150.119 300.99 152.153L301.981 152.292L301.833 153.352L380.904 308.636L381.645 310.089H310.689L310.413 309.536L239.81 168.204L239.212 167.393L240.018 166.8C247.541 161.26 255.49 156.564 265.229 153.774ZM221.513 3.08788C198.556 1.63769 183.689 1.638 159.267 3.08983L3.26953 308.089H101.212V308.121C125.107 307.978 153.095 298.923 175.162 279.315C197.048 259.868 213.151 230.005 213.627 188.042C195.916 204.791 177.016 219.614 158.115 230.225C138.64 241.158 119.095 247.659 100.818 247.12L100.661 247.437L98.8711 246.544L99.3184 245.649L188.934 66.1709L189.827 64.3818L190.723 66.1689L230.506 145.577C237.723 140.338 245.227 135.795 254.377 133.003C263.572 130.198 274.37 129.177 288.143 130.917L221.513 3.08788ZM299.934 154.029C285.983 152.166 275.035 153.046 265.779 155.697C256.643 158.314 249.1 162.673 241.896 167.906L311.926 308.089H378.382L299.934 154.029Z" fill="url(#araGrad)"/></svg>
+      <svg width="90" height="90" viewBox="0 0 376 307" fill="none" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="g1L" x1="375.369" y1="305.624" x2="0.369139" y2="-0.37599" gradientUnits="userSpaceOnUse"><stop stopColor="#7C3AED"/><stop offset="0.5" stopColor="#2563EB"/><stop offset="1" stopColor="#1E40AF"/></linearGradient><linearGradient id="g2L" x1="375.369" y1="305.624" x2="0.369139" y2="-0.37599" gradientUnits="userSpaceOnUse"><stop stopColor="#7C3AED"/><stop offset="0.5" stopColor="#2563EB"/><stop offset="1" stopColor="#1E40AF"/></linearGradient></defs><path fillRule="evenodd" clipRule="evenodd" d="M218.243 1.08728C195.286 -0.36291 180.42 -0.362596 155.997 1.08924L0 306.088H97.9424V306.12C121.838 305.978 149.826 296.923 171.893 277.315C193.779 257.867 209.881 228.004 210.357 186.041C192.647 202.79 173.746 217.613 154.846 228.224C135.371 239.157 115.825 245.658 97.5488 245.12L95.8691 245.124C96.4549 245.319 95.2834 244.929 95.8691 245.124C95.2834 244.929 186.558 62.3812 186.558 62.3812L227.236 143.577C234.454 138.337 241.957 133.794 251.107 131.002C260.302 128.197 271.1 127.176 284.873 128.916L218.243 1.08728Z" fill="url(#g1L)"/><path fillRule="evenodd" clipRule="evenodd" d="M296.664 152.029C282.713 150.165 271.765 151.046 262.51 153.697C253.373 156.314 245.83 160.672 238.627 165.906L308.656 306.088H375.112L296.664 152.029Z" fill="url(#g2L)"/></svg>
       <div style={{ fontSize:24, fontWeight:800, color:C.text, letterSpacing:-0.5 }}>Ara Finance</div>
       <div style={{ fontSize:13, color:C.sub }}>Controle com clareza. Viva melhor</div>
     </div>
@@ -501,7 +588,7 @@ export default function App() {
       <div style={{ padding:"20px 20px 16px", background:"linear-gradient(180deg, #0d1424 0%, "+C.bg+" 100%)" }}>
         <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start" }}>
           <div style={{ display:"flex", alignItems:"center", gap:10 }}>
-            <svg width="36" height="36" viewBox="0 0 382 311" fill="none" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="araGradH" x1="0" y1="0" x2="382" y2="311" gradientUnits="userSpaceOnUse"><stop offset="0%" stopColor="#2563EB"/><stop offset="100%" stopColor="#7C3AED"/></linearGradient></defs><path d="M158.852 1.11034C183.628 -0.369723 198.625 -0.370178 221.923 1.10936L222.563 0.776355L222.765 1.1621L223.2 1.19042L223.154 1.91014L290.525 131.163L290.567 131.244L290.768 131.272L290.728 131.552L290.987 132.05L290.633 132.234L290.49 133.254L289.5 133.115C275.182 131.114 264.194 132.098 254.961 134.915C245.998 137.65 238.628 142.13 231.414 147.389L231.498 147.556L230.507 148.052L229.943 148.468L229.871 148.37L229.71 148.452L229.262 147.558L229.238 147.511L228.757 146.857L228.869 146.774L189.83 68.8525L101.807 245.142C119.322 245.423 138.168 239.129 157.136 228.48C176.345 217.697 195.608 202.486 213.639 185.271V185.125H213.793C214.035 184.893 214.279 184.663 214.521 184.431L215.187 185.125H215.639V185.596L215.905 185.874C215.817 185.959 215.726 186.043 215.638 186.128C215.637 229.654 199.147 260.677 176.49 280.81C153.859 300.919 125.119 310.125 100.639 310.125H99.6387V310.089H0L0.744141 308.634L157.624 1.91112L157.581 1.18651L158.008 1.16014L158.203 0.779285L158.852 1.11034ZM265.229 153.774C274.968 150.985 286.439 150.119 300.99 152.153L301.981 152.292L301.833 153.352L380.904 308.636L381.645 310.089H310.689L310.413 309.536L239.81 168.204L239.212 167.393L240.018 166.8C247.541 161.26 255.49 156.564 265.229 153.774ZM221.513 3.08788C198.556 1.63769 183.689 1.638 159.267 3.08983L3.26953 308.089H101.212V308.121C125.107 307.978 153.095 298.923 175.162 279.315C197.048 259.868 213.151 230.005 213.627 188.042C195.916 204.791 177.016 219.614 158.115 230.225C138.64 241.158 119.095 247.659 100.818 247.12L100.661 247.437L98.8711 246.544L99.3184 245.649L188.934 66.1709L189.827 64.3818L190.723 66.1689L230.506 145.577C237.723 140.338 245.227 135.795 254.377 133.003C263.572 130.198 274.37 129.177 288.143 130.917L221.513 3.08788ZM299.934 154.029C285.983 152.166 275.035 153.046 265.779 155.697C256.643 158.314 249.1 162.673 241.896 167.906L311.926 308.089H378.382L299.934 154.029Z" fill="url(#araGradH)"/></svg>
+            <svg width="36" height="36" viewBox="0 0 376 307" fill="none" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="g1H" x1="375.369" y1="305.624" x2="0.369139" y2="-0.37599" gradientUnits="userSpaceOnUse"><stop stopColor="#7C3AED"/><stop offset="0.5" stopColor="#2563EB"/><stop offset="1" stopColor="#1E40AF"/></linearGradient><linearGradient id="g2H" x1="375.369" y1="305.624" x2="0.369139" y2="-0.37599" gradientUnits="userSpaceOnUse"><stop stopColor="#7C3AED"/><stop offset="0.5" stopColor="#2563EB"/><stop offset="1" stopColor="#1E40AF"/></linearGradient></defs><path fillRule="evenodd" clipRule="evenodd" d="M218.243 1.08728C195.286 -0.36291 180.42 -0.362596 155.997 1.08924L0 306.088H97.9424V306.12C121.838 305.978 149.826 296.923 171.893 277.315C193.779 257.867 209.881 228.004 210.357 186.041C192.647 202.79 173.746 217.613 154.846 228.224C135.371 239.157 115.825 245.658 97.5488 245.12L95.8691 245.124C96.4549 245.319 95.2834 244.929 95.8691 245.124C95.2834 244.929 186.558 62.3812 186.558 62.3812L227.236 143.577C234.454 138.337 241.957 133.794 251.107 131.002C260.302 128.197 271.1 127.176 284.873 128.916L218.243 1.08728Z" fill="url(#g1H)"/><path fillRule="evenodd" clipRule="evenodd" d="M296.664 152.029C282.713 150.165 271.765 151.046 262.51 153.697C253.373 156.314 245.83 160.672 238.627 165.906L308.656 306.088H375.112L296.664 152.029Z" fill="url(#g2H)"/></svg>
             <div style={{ fontSize:22, fontWeight:800, color:C.text, letterSpacing:-0.5 }}>Ara Finance</div>
           </div>
           <button onClick={()=>{ setShowBackup(true); setBackupText(""); setBackupMsg(""); setImportText(""); setImportSuccess(false); }} style={{ background:C.card, border:"1px solid "+C.border, color:C.sub, borderRadius:12, width:38, height:38, cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center" }}>
@@ -1178,7 +1265,7 @@ export default function App() {
               <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", padding:"14px 16px", borderBottom:"1px solid "+C.border }}>
                 <div style={{ display:"flex", alignItems:"center", gap:12 }}>
                   <div style={{ width:38, height:38, borderRadius:10, overflow:"hidden" }}>
-                    <svg width="38" height="38" viewBox="0 0 382 311" fill="none" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="araGradS" x1="0" y1="0" x2="382" y2="311" gradientUnits="userSpaceOnUse"><stop offset="0%" stopColor="#2563EB"/><stop offset="100%" stopColor="#7C3AED"/></linearGradient></defs><path d="M158.852 1.11034C183.628 -0.369723 198.625 -0.370178 221.923 1.10936L222.563 0.776355L222.765 1.1621L223.2 1.19042L223.154 1.91014L290.525 131.163L290.567 131.244L290.768 131.272L290.728 131.552L290.987 132.05L290.633 132.234L290.49 133.254L289.5 133.115C275.182 131.114 264.194 132.098 254.961 134.915C245.998 137.65 238.628 142.13 231.414 147.389L231.498 147.556L230.507 148.052L229.943 148.468L229.871 148.37L229.71 148.452L229.262 147.558L229.238 147.511L228.757 146.857L228.869 146.774L189.83 68.8525L101.807 245.142C119.322 245.423 138.168 239.129 157.136 228.48C176.345 217.697 195.608 202.486 213.639 185.271V185.125H213.793C214.035 184.893 214.279 184.663 214.521 184.431L215.187 185.125H215.639V185.596L215.905 185.874C215.817 185.959 215.726 186.043 215.638 186.128C215.637 229.654 199.147 260.677 176.49 280.81C153.859 300.919 125.119 310.125 100.639 310.125H99.6387V310.089H0L0.744141 308.634L157.624 1.91112L157.581 1.18651L158.008 1.16014L158.203 0.779285L158.852 1.11034ZM265.229 153.774C274.968 150.985 286.439 150.119 300.99 152.153L301.981 152.292L301.833 153.352L380.904 308.636L381.645 310.089H310.689L310.413 309.536L239.81 168.204L239.212 167.393L240.018 166.8C247.541 161.26 255.49 156.564 265.229 153.774ZM221.513 3.08788C198.556 1.63769 183.689 1.638 159.267 3.08983L3.26953 308.089H101.212V308.121C125.107 307.978 153.095 298.923 175.162 279.315C197.048 259.868 213.151 230.005 213.627 188.042C195.916 204.791 177.016 219.614 158.115 230.225C138.64 241.158 119.095 247.659 100.818 247.12L100.661 247.437L98.8711 246.544L99.3184 245.649L188.934 66.1709L189.827 64.3818L190.723 66.1689L230.506 145.577C237.723 140.338 245.227 135.795 254.377 133.003C263.572 130.198 274.37 129.177 288.143 130.917L221.513 3.08788ZM299.934 154.029C285.983 152.166 275.035 153.046 265.779 155.697C256.643 158.314 249.1 162.673 241.896 167.906L311.926 308.089H378.382L299.934 154.029Z" fill="url(#araGradS)"/></svg>
+                    <svg width="38" height="38" viewBox="0 0 376 307" fill="none" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="g1S" x1="375.369" y1="305.624" x2="0.369139" y2="-0.37599" gradientUnits="userSpaceOnUse"><stop stopColor="#7C3AED"/><stop offset="0.5" stopColor="#2563EB"/><stop offset="1" stopColor="#1E40AF"/></linearGradient><linearGradient id="g2S" x1="375.369" y1="305.624" x2="0.369139" y2="-0.37599" gradientUnits="userSpaceOnUse"><stop stopColor="#7C3AED"/><stop offset="0.5" stopColor="#2563EB"/><stop offset="1" stopColor="#1E40AF"/></linearGradient></defs><path fillRule="evenodd" clipRule="evenodd" d="M218.243 1.08728C195.286 -0.36291 180.42 -0.362596 155.997 1.08924L0 306.088H97.9424V306.12C121.838 305.978 149.826 296.923 171.893 277.315C193.779 257.867 209.881 228.004 210.357 186.041C192.647 202.79 173.746 217.613 154.846 228.224C135.371 239.157 115.825 245.658 97.5488 245.12L95.8691 245.124C96.4549 245.319 95.2834 244.929 95.8691 245.124C95.2834 244.929 186.558 62.3812 186.558 62.3812L227.236 143.577C234.454 138.337 241.957 133.794 251.107 131.002C260.302 128.197 271.1 127.176 284.873 128.916L218.243 1.08728Z" fill="url(#g1S)"/><path fillRule="evenodd" clipRule="evenodd" d="M296.664 152.029C282.713 150.165 271.765 151.046 262.51 153.697C253.373 156.314 245.83 160.672 238.627 165.906L308.656 306.088H375.112L296.664 152.029Z" fill="url(#g2S)"/></svg>
                   </div>
                   <div>
                     <div style={{ fontSize:14, fontWeight:600, color:C.text }}>Ara Finance</div>
@@ -1197,6 +1284,16 @@ export default function App() {
                   <svg width="13" height="13" viewBox="0 0 24 24" fill={C.red} stroke="none"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
                   <span style={{ fontSize:13, color:C.text, fontWeight:500 }}>Claude e Luan</span>
                 </div>
+              </div>
+              <div style={{ padding:"12px 16px", borderTop:"1px solid "+C.border, display:"flex", justifyContent:"space-between", alignItems:"center" }}>
+                <div>
+                  <div style={{ fontSize:12, color:C.sub }}>Conta conectada</div>
+                  <div style={{ fontSize:13, color:C.text, marginTop:2 }}>{user?.email}</div>
+                </div>
+                <button onClick={()=>{ setShowBackup(false); signOut(); }} style={{ background:"#7f1d1d33", border:"1px solid "+C.red+"44", color:C.red, borderRadius:10, padding:"6px 14px", cursor:"pointer", fontSize:13, fontWeight:600, display:"flex", alignItems:"center", gap:6 }}>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+                  Sair
+                </button>
               </div>
             </div>
           </div>
