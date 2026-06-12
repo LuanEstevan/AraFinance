@@ -100,7 +100,7 @@ const BANK_BRANDS = {
 const MONTHS = ["Janeiro","Fevereiro","Marco","Abril","Maio","Junho","Julho","Agosto","Setembro","Outubro","Novembro","Dezembro"];
 const MONTHS_DISPLAY = ["Janeiro","Fevereiro","Marco","Abril","Maio","Junho","Julho","Agosto","Setembro","Outubro","Novembro","Dezembro"];
 const TABS = ["dashboard","contas","lanÃ§amentos","histÃ³rico","metas"];
-const TAB_LABELS = { dashboard:"Dashboard", contas:"Contas", lanÃ§amentos:"LanÃ§amentos", histÃ³rico:"HistÃ³rico", metas:"Metas" };
+const TAB_LABELS = { dashboard:"Dashboard", contas:"Contas", "lanÃ§amentos":"LanÃ§amentos", "histÃ³rico":"HistÃ³rico", metas:"Metas" };
 
 // -- Helpers ---------------------------------------------------
 const C = { bg:"#0a0f1a", surface:"#111827", card:"#161e2e", border:"#1f2d45", muted:"#374151", text:"#f1f5f9", sub:"#6b7280", green:"#22c55e", red:"#ef4444", purple:"#a855f7", blue:"#3b82f6" };
@@ -671,7 +671,7 @@ export default function App() {
       <div style={{ position:"fixed", bottom:0, left:0, right:0, background:C.surface, borderTop:"1px solid "+C.border, display:"flex", zIndex:50, paddingBottom:8 }}>
         {TABS.map(t => {
           const active = tab===t;
-          const labels = { dashboard:"Dashboard", contas:"Contas", lanÃ§amentos:"LanÃ§amentos", histÃ³rico:"HistÃ³rico", metas:"Metas" };
+          const labels = { dashboard:"Dashboard", contas:"Contas", "lanÃ§amentos":"LanÃ§amentos", "histÃ³rico":"HistÃ³rico", metas:"Metas" };
           return (
             <button key={t} onClick={()=>setTab(t)} style={{ flex:1, border:"none", background:"none", cursor:"pointer", padding:"10px 0 4px", display:"flex", flexDirection:"column", alignItems:"center", gap:3 }}>
               <TabIcon tab={t} active={active} blue={C.blue} sub={C.sub} />
@@ -738,7 +738,7 @@ export default function App() {
             )}
             {(()=>{
               const months6 = Array.from({length:6},(_,i)=>{ const [y,m]=selectedMonth.split("-").map(Number); const d=new Date(y,m-1-(5-i),1); return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0"); });
-              const data = months6.map(ym=>{ const txs=transactions.filter(t=>t.date.slice(0,7)===ym); const lbl=MONTHS[parseInt(ym.split("-")[1])-1].slice(0,3); const full=MONTHS[parseInt(ym.split("-")[1])-1]+" "+ym.split("-")[0]; return { mÃªs:lbl, fullMÃªs:full, receita:txs.filter(t=>t.type==="income").reduce((s,t)=>s+t.amount,0), gasto:txs.filter(t=>t.type==="expense").reduce((s,t)=>s+t.amount,0) }; });
+              const data = months6.map(ym=>{ const txs=transactions.filter(t=>t.date.slice(0,7)===ym); const lbl=MONTHS[parseInt(ym.split("-")[1])-1].slice(0,3); const full=MONTHS[parseInt(ym.split("-")[1])-1]+" "+ym.split("-")[0]; return { "mÃªs":lbl, fullMes:full, receita:txs.filter(t=>t.type==="income").reduce((s,t)=>s+t.amount,0), gasto:txs.filter(t=>t.type==="expense").reduce((s,t)=>s+t.amount,0) }; });
               if (!data.some(d=>d.receita>0||d.gasto>0)) return null;
               return (
                 <div style={{ background:C.card, borderRadius:16, padding:20, marginBottom:12 }}>
@@ -747,7 +747,7 @@ export default function App() {
                     <BarChart data={data} barCategoryGap="25%" barGap={3}>
                       <XAxis dataKey="mes" tick={{ fill:C.sub, fontSize:11 }} axisLine={false} tickLine={false} />
                       <YAxis hide />
-                      <Tooltip formatter={v=>fmt(v)} labelFormatter={(_,payload)=>payload&&payload[0]?payload[0].payload.fullMÃªs:""} contentStyle={{ background:C.surface, border:"none", borderRadius:12, color:C.text, fontSize:12, padding:"8px 14px", boxShadow:"0 4px 20px #00000066" }} itemStyle={{ color:C.text, fontWeight:700 }} labelStyle={{ color:C.text, fontWeight:700, marginBottom:4 }} cursor={{ fill:"#ffffff06" }} wrapperStyle={{ outline:"none" }} />
+                      <Tooltip formatter={v=>fmt(v)} labelFormatter={(_,payload)=>payload&&payload[0]?payload[0].payload.fullMes:""} contentStyle={{ background:C.surface, border:"none", borderRadius:12, color:C.text, fontSize:12, padding:"8px 14px", boxShadow:"0 4px 20px #00000066" }} itemStyle={{ color:C.text, fontWeight:700 }} labelStyle={{ color:C.text, fontWeight:700, marginBottom:4 }} cursor={{ fill:"#ffffff06" }} wrapperStyle={{ outline:"none" }} />
                       <Bar dataKey="receita" fill={C.green} radius={[5,5,0,0]} name="Receita" />
                       <Bar dataKey="gasto"   fill={C.red}   radius={[5,5,0,0]} name="Gasto" />
                     </BarChart>
@@ -1472,4 +1472,6 @@ export default function App() {
     </div>
   );
 }
+
+
 
