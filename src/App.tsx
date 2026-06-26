@@ -7,6 +7,7 @@ import { TabIcon } from "./components/TabIcon";
 import { CatIcon } from "./components/CatIcon";
 import { AraLogo } from "./components/AraLogo";
 import { SideMenu } from "./components/SideMenu";
+import { Dashboard } from "./screens/Dashboard";
 import { Contas } from "./screens/Contas";
 import { Lancamentos } from "./screens/Lancamentos";
 import { Historico } from "./screens/Historico";
