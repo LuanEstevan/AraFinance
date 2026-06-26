@@ -6,7 +6,7 @@ import { Modal } from "./components/Modal";
 import { TabIcon } from "./components/TabIcon";
 import { CatIcon } from "./components/CatIcon";
 import { AraLogo } from "./components/AraLogo";
-import { Dashboard } from "./screens/Dashboard";
+import { SideMenu } from "./components/SideMenu";
 import { Contas } from "./screens/Contas";
 import { Lancamentos } from "./screens/Lancamentos";
 import { Historico } from "./screens/Historico";
@@ -56,6 +56,7 @@ export default function App() {
   const [advanceModal, setAdvanceModal] = useState<any>(null);
   const [goalModal, setGoalModal]       = useState<any>(null);
   const [showBackup, setShowBackup]     = useState<boolean>(false);
+  const [showMenu, setShowMenu]         = useState<boolean>(false);
   const [backupText, setBackupText]     = useState<string>("");
   const [importText, setImportText]     = useState<string>("");
   const [backupMsg, setBackupMsg]       = useState<string>("");
@@ -523,8 +524,8 @@ export default function App() {
             <AraLogo size={36} id="header" />
             <div style={{ fontSize:22, fontWeight:800, color:C.text, letterSpacing:-0.5 }}>Ara Finance</div>
           </div>
-          <button onClick={() => { setShowBackup(true); setBackupText(""); setBackupMsg(""); setImportText(""); setImportSuccess(false); }} style={{ background:C.card, border:"1px solid "+C.border, color:C.sub, borderRadius:12, width:38, height:38, cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center" }}>
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+          <button onClick={() => setShowMenu(true)} style={{ background:C.card, border:"1px solid "+C.border, color:C.sub, borderRadius:12, width:38, height:38, cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center" }}>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
           </button>
         </div>
 
@@ -1039,6 +1040,14 @@ export default function App() {
           </Modal>
         );
       })()}
+      {/* Side Menu */}
+      <SideMenu
+        isOpen={showMenu}
+        onClose={() => setShowMenu(false)}
+        user={user}
+        onSignOut={signOut}
+      />
+
     </div>
   );
 }
