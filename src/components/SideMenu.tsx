@@ -72,15 +72,12 @@ export function SideMenu({ isOpen, onClose, user, onSignOut }: SideMenuProps) {
   const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    setSaving(true);
-    const ext = file.name.split(".").pop();
-    const path = `${user.id}/avatar.${ext}`;
-    const { error } = await supabase.storage.from("avatars").upload(path, file, { upsert: true });
-    if (!error) {
-      const { data } = supabase.storage.from("avatars").getPublicUrl(path);
-      setAvatarUrl(data.publicUrl);
-    }
-    setSaving(false);
+    // Convert to base64 for preview (Storage config needed for persistence)
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      setAvatarUrl(ev.target?.result as string);
+    };
+    reader.readAsDataURL(file);
   };
 
   if (!isOpen) return null;
