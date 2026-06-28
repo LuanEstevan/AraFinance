@@ -24,11 +24,6 @@ export default function App() {
   // Auth state
   const [user, setUser]               = useState<any>(null);
   const [authLoading, setAuthLoading] = useState<boolean>(true);
-  const [authView, setAuthView]       = useState<"login" | "register">("login");
-  const [authEmail, setAuthEmail]     = useState<string>("");
-  const [authPassword, setAuthPassword] = useState<string>("");
-  const [authError, setAuthError]     = useState<string>("");
-  const [authWorking, setAuthWorking] = useState<boolean>(false);
 
   // Data state
   const [transactions, setTransactions] = useState<Transaction[]>([]);
@@ -77,27 +72,39 @@ export default function App() {
     return () => subscription.unsubscribe();
   }, []);
 
-  // Load data from Supabase
+  // Load data — Supabase if logged in, localStorage otherwise
   useEffect(() => {
-    if (!user) return;
     (async () => {
       setLoading(true);
-      try {
-        const { data, error } = await supabase
-          .from("user_data")
-          .select("*")
-          .eq("id", user.id)
-          .single();
-        if (data && !error) {
-          if (data.transactions)  setTransactions(data.transactions);
-          if (data.accounts)      setAccounts(data.accounts);
-          if (data.goals)         setGoals(data.goals);
-          if (data.paid_bills)    setPaidBills(data.paid_bills);
-          if (data.next_tx_id)    setNextTxId(data.next_tx_id);
-          if (data.next_acc_id)   setNextAccId(data.next_acc_id);
-          if (data.next_goal_id)  setNextGoalId(data.next_goal_id);
-        }
-      } catch(e) {}
+      if (user) {
+        try {
+          const { data, error } = await supabase
+            .from("user_data").select("*").eq("id", user.id).single();
+          if (data && !error) {
+            if (data.transactions)  setTransactions(data.transactions);
+            if (data.accounts)      setAccounts(data.accounts);
+            if (data.goals)         setGoals(data.goals);
+            if (data.paid_bills)    setPaidBills(data.paid_bills);
+            if (data.next_tx_id)    setNextTxId(data.next_tx_id);
+            if (data.next_acc_id)   setNextAccId(data.next_acc_id);
+            if (data.next_goal_id)  setNextGoalId(data.next_goal_id);
+          }
+        } catch(e) {}
+      } else {
+        try {
+          const raw = localStorage.getItem("ara-finance-data");
+          if (raw) {
+            const d = JSON.parse(raw);
+            if (d.transactions)  setTransactions(d.transactions);
+            if (d.accounts)      setAccounts(d.accounts);
+            if (d.goals)         setGoals(d.goals);
+            if (d.paidBills)     setPaidBills(d.paidBills);
+            if (d.nextTxId)      setNextTxId(d.nextTxId);
+            if (d.nextAccId)     setNextAccId(d.nextAccId);
+            if (d.nextGoalId)    setNextGoalId(d.nextGoalId);
+          }
+        } catch(e) {}
+      }
       setLoading(false);
     })();
   }, [user]);
@@ -153,40 +160,39 @@ export default function App() {
 
   // Save to Supabase
   const saveData = useCallback(async (txs: Transaction[], accs: Account[], txId: number, accId: number, gls: Goal[], gId: number, paid?: PaidBills) => {
-    if (!user) return;
     setSaving(true);
     const pb = paid !== undefined ? paid : paidBills;
-    try {
-      await supabase.from("user_data").upsert({
-        id: user.id,
-        transactions: txs,
-        accounts: accs,
-        goals: gls,
-        paid_bills: pb,
-        next_tx_id: txId,
-        next_acc_id: accId,
-        next_goal_id: gId,
-        updated_at: new Date().toISOString(),
-      });
-      setLastSaved(new Date());
-    } catch(e) {}
+    if (user) {
+      try {
+        await supabase.from("user_data").upsert({
+          id: user.id,
+          transactions: txs, accounts: accs, goals: gls, paid_bills: pb,
+          next_tx_id: txId, next_acc_id: accId, next_goal_id: gId,
+          updated_at: new Date().toISOString(),
+        });
+        setLastSaved(new Date());
+      } catch(e) {}
+    } else {
+      try {
+        localStorage.setItem("ara-finance-data", JSON.stringify({
+          transactions: txs, accounts: accs, goals: gls, paidBills: pb,
+          nextTxId: txId, nextAccId: accId, nextGoalId: gId,
+        }));
+        setLastSaved(new Date());
+      } catch(e) {}
+    }
     setSaving(false);
   }, [user, paidBills]);
 
   // Auth functions
-  const signIn = async () => {
-    setAuthError(""); setAuthWorking(true);
-    const { error } = await supabase.auth.signInWithPassword({ email: authEmail, password: authPassword });
-    if (error) setAuthError(error.message);
-    setAuthWorking(false);
+  const signIn = async (email: string, password: string): Promise<string> => {
+    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    return error ? error.message : "";
   };
 
-  const signUp = async () => {
-    setAuthError(""); setAuthWorking(true);
-    const { error } = await supabase.auth.signUp({ email: authEmail, password: authPassword });
-    if (error) setAuthError(error.message);
-    else setAuthError("Verifique seu email para confirmar o cadastro!");
-    setAuthWorking(false);
+  const signUp = async (email: string, password: string): Promise<string> => {
+    const { error } = await supabase.auth.signUp({ email, password });
+    return error ? error.message : "Verifique seu email para confirmar o cadastro!";
   };
 
   const signOut = async () => {
@@ -386,106 +392,6 @@ export default function App() {
     <div style={{ minHeight:"100vh", background:C.bg, display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", gap:12 }}>
       <AraLogo size={72} id="splash" />
       <div style={{ fontSize:22, fontWeight:800, color:C.text }}>Ara Finance</div>
-    </div>
-  );
-
-  // ── Login / Register ───────────────────────────────────────
-  if (!user) return (
-    <div style={{ minHeight:"100vh", background:C.bg, display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", padding:"32px 24px", color:C.text, overflow:"hidden", position:"relative" }}>
-      <style>{`
-        @keyframes fadeUp {
-          from { opacity:0; transform:translateY(24px); }
-          to   { opacity:1; transform:translateY(0); }
-        }
-        @keyframes fadeIn {
-          from { opacity:0; }
-          to   { opacity:1; }
-        }
-        @keyframes pulse {
-          0%, 100% { opacity:0.15; transform:scale(1); }
-          50%       { opacity:0.25; transform:scale(1.05); }
-        }
-        @keyframes float {
-          0%, 100% { transform:translateY(0px); }
-          50%       { transform:translateY(-8px); }
-        }
-        .auth-bg-circle { animation: pulse 4s ease-in-out infinite; }
-        .auth-logo      { animation: fadeUp 0.6s ease both; animation-delay:0.1s; }
-        .auth-title     { animation: fadeUp 0.6s ease both; animation-delay:0.25s; }
-        .auth-slogan    { animation: fadeUp 0.6s ease both; animation-delay:0.35s; }
-        .auth-tabs      { animation: fadeUp 0.6s ease both; animation-delay:0.45s; }
-        .auth-fields    { animation: fadeUp 0.6s ease both; animation-delay:0.55s; }
-        .auth-logo-float { animation: float 3s ease-in-out infinite; animation-delay:0.8s; }
-        button { -webkit-tap-highlight-color: transparent; }
-        input:focus { border-color: #3b82f6 !important; box-shadow: 0 0 0 3px #3b82f620; transition: all 0.2s; }
-      `}</style>
-
-      {/* Background decorative circles */}
-      <div className="auth-bg-circle" style={{ position:"absolute", top:"-10%", right:"-15%", width:300, height:300, borderRadius:"50%", background:"radial-gradient(circle, #7C3AED22, transparent 70%)", pointerEvents:"none" }} />
-      <div className="auth-bg-circle" style={{ position:"absolute", bottom:"-5%", left:"-10%", width:250, height:250, borderRadius:"50%", background:"radial-gradient(circle, #2563EB22, transparent 70%)", pointerEvents:"none", animationDelay:"2s" }} />
-
-      <div style={{ width:"100%", maxWidth:380, display:"flex", flexDirection:"column", alignItems:"center", zIndex:1 }}>
-
-        {/* Logo */}
-        <div className="auth-logo auth-logo-float">
-          <AraLogo size={90} id="login" />
-        </div>
-
-        {/* Title */}
-        <div className="auth-title" style={{ fontSize:32, fontWeight:800, color:C.text, marginBottom:6, marginTop:20, letterSpacing:-0.5 }}>Ara Finance</div>
-
-        {/* Slogan */}
-        <div className="auth-slogan" style={{ fontSize:14, color:C.sub, marginBottom:48, textAlign:"center", lineHeight:1.5 }}>
-          Controle com clareza.<br/>Viva melhor.
-        </div>
-
-        {/* Tabs */}
-        <div className="auth-tabs" style={{ display:"flex", background:C.card, borderRadius:14, padding:4, marginBottom:20, width:"100%", border:"1px solid "+C.border }}>
-          <button onClick={() => { setAuthView("login"); setAuthError(""); }} style={{ flex:1, padding:"12px", borderRadius:11, border:"none", cursor:"pointer", fontSize:14, fontWeight:600, background:authView==="login"?C.surface:"transparent", color:authView==="login"?C.text:C.sub, transition:"all 0.2s" }}>Entrar</button>
-          <button onClick={() => { setAuthView("register"); setAuthError(""); }} style={{ flex:1, padding:"12px", borderRadius:11, border:"none", cursor:"pointer", fontSize:14, fontWeight:600, background:authView==="register"?C.surface:"transparent", color:authView==="register"?C.text:C.sub, transition:"all 0.2s" }}>Criar conta</button>
-        </div>
-
-        {/* Fields */}
-        <div className="auth-fields" style={{ display:"flex", flexDirection:"column", gap:12, width:"100%" }}>
-          <input
-            style={{ ...iStyle, transition:"border-color 0.2s, box-shadow 0.2s" }}
-            placeholder="Email"
-            type="email"
-            inputMode="email"
-            value={authEmail}
-            onChange={e => setAuthEmail(e.target.value)}
-          />
-          <input
-            style={{ ...iStyle, transition:"border-color 0.2s, box-shadow 0.2s" }}
-            placeholder="Senha"
-            type="password"
-            value={authPassword}
-            onChange={e => setAuthPassword(e.target.value)}
-            onKeyDown={e => e.key === "Enter" && (authView === "login" ? signIn() : signUp())}
-          />
-
-          {authError && (
-            <div style={{ fontSize:13, color:authError.includes("Verifique") ? C.green : C.red, background:authError.includes("Verifique") ? "#14532d33" : "#7f1d1d33", borderRadius:12, padding:"12px 14px", borderLeft:"3px solid "+(authError.includes("Verifique")?C.green:C.red), animation:"fadeIn 0.3s ease both" }}>
-              {authError}
-            </div>
-          )}
-
-          <button
-            onClick={authView === "login" ? signIn : signUp}
-            disabled={authWorking}
-            style={{ ...btn("linear-gradient(135deg,#7C3AED,#2563EB)"), padding:"15px", fontSize:16, borderRadius:14, opacity:authWorking?0.7:1, transition:"opacity 0.2s, transform 0.1s", marginTop:4 }}
-          >
-            {authWorking ? "Aguarde..." : authView === "login" ? "Entrar" : "Criar conta"}
-          </button>
-
-          <div style={{ textAlign:"center", fontSize:12, color:C.sub, marginTop:8 }}>
-            {authView === "login" ? "Não tem conta? " : "Já tem conta? "}
-            <span onClick={() => { setAuthView(authView === "login" ? "register" : "login"); setAuthError(""); }} style={{ color:C.blue, cursor:"pointer", fontWeight:600 }}>
-              {authView === "login" ? "Criar conta" : "Entrar"}
-            </span>
-          </div>
-        </div>
-      </div>
     </div>
   );
 
@@ -1041,6 +947,8 @@ export default function App() {
         onClose={() => setShowMenu(false)}
         user={user}
         onSignOut={signOut}
+        onSignIn={signIn}
+        onSignUp={signUp}
       />
 
     </div>
