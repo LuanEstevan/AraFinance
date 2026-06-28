@@ -9,9 +9,11 @@ interface SideMenuProps {
   onClose: () => void;
   user: any;
   onSignOut: () => void;
+  onSignIn: (email: string, password: string) => Promise<string>;
+  onSignUp: (email: string, password: string) => Promise<string>;
 }
 
-type MenuView = "main" | "sobre" | "perfil" | "faq" | "configuracoes";
+type MenuView = "main" | "sobre" | "perfil" | "faq" | "configuracoes" | "auth";
 
 const FAQ_ITEMS = [
   {
@@ -40,8 +42,13 @@ const FAQ_ITEMS = [
   },
 ];
 
-export function SideMenu({ isOpen, onClose, user, onSignOut }: SideMenuProps) {
+export function SideMenu({ isOpen, onClose, user, onSignOut, onSignIn, onSignUp }: SideMenuProps) {
   const [view, setView] = useState<MenuView>("main");
+  const [authView, setAuthView] = useState<"login" | "register">("login");
+  const [authEmail, setAuthEmail] = useState("");
+  const [authPassword, setAuthPassword] = useState("");
+  const [authError, setAuthError] = useState("");
+  const [authWorking, setAuthWorking] = useState(false);
   const [name, setName]           = useState("");
   const [avatarUrl, setAvatarUrl] = useState("");
   const [profileLoaded, setProfileLoaded] = useState(false);
@@ -135,13 +142,30 @@ export function SideMenu({ isOpen, onClose, user, onSignOut }: SideMenuProps) {
               <div style={{ background:C.card, borderRadius:14, padding:16, marginBottom:16, border:"1px solid "+C.border }}>
                 <div style={{ display:"flex", alignItems:"center", gap:12 }}>
                   <div style={{ width:44, height:44, borderRadius:12, background:"linear-gradient(135deg,#7C3AED,#2563EB)", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0, fontSize:18, fontWeight:700, color:"#fff" }}>
-                    {user?.email?.[0]?.toUpperCase() || "?"}
+                    {user ? user?.email?.[0]?.toUpperCase() : "?"}
                   </div>
                   <div style={{ flex:1, minWidth:0 }}>
-                    <div style={{ fontSize:13, fontWeight:600, color:C.text, whiteSpace:"nowrap", overflow:"hidden", textOverflow:"ellipsis" }}>{user?.email}</div>
-                    <div style={{ fontSize:11, color:C.sub, marginTop:2 }}>Conta ativa</div>
+                    {user ? (
+                      <>
+                        <div style={{ fontSize:13, fontWeight:600, color:C.text, whiteSpace:"nowrap", overflow:"hidden", textOverflow:"ellipsis" }}>{user?.email}</div>
+                        <div style={{ fontSize:11, color:C.sub, marginTop:2 }}>Conta ativa — dados na nuvem</div>
+                      </>
+                    ) : (
+                      <>
+                        <div style={{ fontSize:13, fontWeight:600, color:C.text }}>Visitante</div>
+                        <div style={{ fontSize:11, color:C.sub, marginTop:2 }}>Dados salvos neste dispositivo</div>
+                      </>
+                    )}
                   </div>
                 </div>
+
+                {/* Login / Register buttons when not logged in */}
+                {!user && (
+                  <div style={{ display:"flex", gap:8, marginTop:12 }}>
+                    <button onClick={() => { setAuthView("login"); setView("auth"); setAuthError(""); }} style={{ flex:1, padding:"10px", borderRadius:10, border:"1px solid "+C.border, background:C.surface, color:C.text, cursor:"pointer", fontSize:13, fontWeight:600 }}>Entrar</button>
+                    <button onClick={() => { setAuthView("register"); setView("auth"); setAuthError(""); }} style={{ flex:1, padding:"10px", borderRadius:10, border:"none", background:"linear-gradient(135deg,#7C3AED,#2563EB)", color:"#fff", cursor:"pointer", fontSize:13, fontWeight:600 }}>Criar conta</button>
+                  </div>
+                )}
               </div>
 
               {menuItem(
@@ -306,6 +330,39 @@ export function SideMenu({ isOpen, onClose, user, onSignOut }: SideMenuProps) {
               </div>
             </div>
           )}
+          {/* AUTH */}
+          {view === "auth" && (
+            <div>
+              {backBtn(authView === "login" ? "Entrar" : "Criar conta")}
+              <div style={{ display:"flex", background:C.card, borderRadius:12, padding:4, marginBottom:20, border:"1px solid "+C.border }}>
+                <button onClick={() => { setAuthView("login"); setAuthError(""); }} style={{ flex:1, padding:"10px", borderRadius:10, border:"none", cursor:"pointer", fontSize:13, fontWeight:600, background:authView==="login"?C.surface:"transparent", color:authView==="login"?C.text:C.sub }}>Entrar</button>
+                <button onClick={() => { setAuthView("register"); setAuthError(""); }} style={{ flex:1, padding:"10px", borderRadius:10, border:"none", cursor:"pointer", fontSize:13, fontWeight:600, background:authView==="register"?C.surface:"transparent", color:authView==="register"?C.text:C.sub }}>Criar conta</button>
+              </div>
+              <div style={{ display:"flex", flexDirection:"column", gap:12 }}>
+                <input style={iStyle} placeholder="Email" type="email" inputMode="email" value={authEmail} onChange={e => setAuthEmail(e.target.value)} />
+                <input style={iStyle} placeholder="Senha" type="password" value={authPassword} onChange={e => setAuthPassword(e.target.value)} onKeyDown={async e => { if (e.key === "Enter") { setAuthWorking(true); const err = authView === "login" ? await onSignIn(authEmail, authPassword) : await onSignUp(authEmail, authPassword); setAuthError(err); setAuthWorking(false); if (!err) { setView("main"); onClose(); } } }} />
+                {authError && (
+                  <div style={{ fontSize:13, color:authError.includes("Verifique")?C.green:C.red, background:authError.includes("Verifique")?"#14532d33":"#7f1d1d33", borderRadius:10, padding:"10px 14px", borderLeft:"3px solid "+(authError.includes("Verifique")?C.green:C.red) }}>
+                    {authError}
+                  </div>
+                )}
+                <button
+                  onClick={async () => {
+                    setAuthWorking(true);
+                    const err = authView === "login" ? await onSignIn(authEmail, authPassword) : await onSignUp(authEmail, authPassword);
+                    setAuthError(err);
+                    setAuthWorking(false);
+                    if (!err || err.includes("Verifique")) { setView("main"); if (!err) onClose(); }
+                  }}
+                  disabled={authWorking}
+                  style={{ ...btn("linear-gradient(135deg,#7C3AED,#2563EB)"), opacity:authWorking?0.7:1 }}
+                >
+                  {authWorking ? "Aguarde..." : authView === "login" ? "Entrar" : "Criar conta"}
+                </button>
+              </div>
+            </div>
+          )}
+
         </div>
       </div>
     </>
