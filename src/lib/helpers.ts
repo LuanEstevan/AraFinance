@@ -68,6 +68,14 @@ export const btn = (bg: string, extra?: React.CSSProperties): React.CSSPropertie
   ...extra,
 });
 
+export const catLabel = (n: string): string => {
+  const map: Record<string, string> = {
+    Alimentacao:"Alimentação", Saude:"Saúde", Educacao:"Educação",
+    Credito:"Crédito", Salario:"Salário",
+  };
+  return map[n] || n;
+};
+
 // ── Compression ───────────────────────────────────────────────
 const KEY_MAP: Record<string, string> = {
   transactions:"T", accounts:"A", nextTxId:"ti", nextAccId:"ai", goals:"GL",
