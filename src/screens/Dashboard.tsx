@@ -1,6 +1,6 @@
 import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
 import { C, MONTHS } from "../lib/constants";
-import { fmt, monthLabel } from "../lib/helpers";
+import { fmt, monthLabel , catLabel } from "../lib/helpers";
 import { CatIcon } from "../components/CatIcon";
 import type { Transaction } from "../types";
 
@@ -15,13 +15,7 @@ interface DashboardProps {
   byDate: { day: string; receita: number; gasto: number }[];
 }
 
-const catLabel = (n: string): string => {
-  const map: Record<string, string> = {
-    Alimentacao:"Alimentação", Saude:"Saúde", Educacao:"Educação",
-    Credito:"Crédito", Salario:"Salário",
-  };
-  return map[n] || n;
-};
+
 
 export function Dashboard({
   filtered, transactions, selectedMonth,

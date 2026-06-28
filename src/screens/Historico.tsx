@@ -1,5 +1,5 @@
 import { C, ALL_CATS, ACCOUNT_COLORS } from "../lib/constants";
-import { fmt, monthLabel } from "../lib/helpers";
+import { fmt, monthLabel , catLabel } from "../lib/helpers";
 import { CatIcon } from "../components/CatIcon";
 import type { Transaction, Account } from "../types";
 
@@ -14,13 +14,7 @@ interface HistoricoProps {
   onAdvance: (group: Transaction[]) => void;
 }
 
-const catLabel = (n: string): string => {
-  const map: Record<string, string> = {
-    Alimentacao:"Alimentação", Saude:"Saúde", Educacao:"Educação",
-    Credito:"Crédito", Salario:"Salário",
-  };
-  return map[n] || n;
-};
+
 
 export function Historico({ sorted, transactions, accounts, selectedMonth, searchQuery, onSearchChange, onEditTx, onAdvance }: HistoricoProps) {
   const displayList = searchQuery.trim()
