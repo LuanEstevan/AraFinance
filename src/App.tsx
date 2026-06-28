@@ -1,7 +1,7 @@
 import { useState, useMemo, useEffect, useCallback } from "react";
 import { supabase } from "./lib/supabase";
-import { C, EXPENSE_CATS, INCOME_CATS, ALL_CATS, ACCOUNT_COLORS, TABS, TAB_LABELS, MONTHS } from "./lib/constants";
-import { fmt, parseBR, monthLabel, fmtDate, getBrand, getBillingYM, iStyle, btn, compress, decompress } from "./lib/helpers";
+import { C, EXPENSE_CATS, INCOME_CATS, ALL_CATS, ACCOUNT_COLORS, TABS, TAB_LABELS } from "./lib/constants";
+import { fmt, parseBR, monthLabel, fmtDate, getBrand, getBillingYM, iStyle, btn, compress, decompress , catLabel } from "./lib/helpers";
 import { Modal } from "./components/Modal";
 import { TabIcon } from "./components/TabIcon";
 import { CatIcon } from "./components/CatIcon";
@@ -14,13 +14,7 @@ import { Historico } from "./screens/Historico";
 import { Metas } from "./screens/Metas";
 import type { Transaction, Account, Goal, PaidBills } from "./types";
 
-const catLabel = (n: string): string => {
-  const map: Record<string, string> = {
-    Alimentacao:"Alimentação", Saude:"Saúde", Educacao:"Educação",
-    Credito:"Crédito", Salario:"Salário",
-  };
-  return map[n] || n;
-};
+
 
 export default function App() {
   const now = new Date();
