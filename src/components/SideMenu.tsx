@@ -3,6 +3,7 @@ import { C } from "../lib/constants";
 import { AraLogo } from "./AraLogo";
 import { supabase } from "../lib/supabase";
 import { btn, iStyle } from "../lib/helpers";
+import type { Language } from "../lib/i18n";
 
 interface SideMenuProps {
   isOpen: boolean;
@@ -11,6 +12,8 @@ interface SideMenuProps {
   onSignOut: () => void;
   onSignIn: (email: string, password: string) => Promise<string>;
   onSignUp: (email: string, password: string) => Promise<string>;
+  currentLanguage: Language;
+  onLanguageChange: (lang: Language) => void;
 }
 
 type MenuView = "main" | "sobre" | "perfil" | "faq" | "configuracoes" | "auth";
@@ -42,7 +45,7 @@ const FAQ_ITEMS = [
   },
 ];
 
-export function SideMenu({ isOpen, onClose, user, onSignOut, onSignIn, onSignUp }: SideMenuProps) {
+export function SideMenu({ isOpen, onClose, user, onSignOut, onSignIn, onSignUp, currentLanguage, onLanguageChange }: SideMenuProps) {
   const [view, setView] = useState<MenuView>("main");
   const [authView, setAuthView] = useState<"login" | "register">("login");
   const [authEmail, setAuthEmail] = useState("");
@@ -298,34 +301,22 @@ export function SideMenu({ isOpen, onClose, user, onSignOut, onSignIn, onSignUp 
           {view === "configuracoes" && (
             <div>
               {backBtn("Configurações")}
-              <div style={{ background:C.card, borderRadius:14, overflow:"hidden", marginBottom:16 }}>
-                <div style={{ padding:"14px 16px", borderBottom:"1px solid "+C.border }}>
-                  <div style={{ fontSize:13, fontWeight:600, color:C.text, marginBottom:2 }}>Conta</div>
-                  <div style={{ fontSize:12, color:C.sub }}>{user?.email}</div>
-                </div>
-                <div onClick={() => setView("perfil")} style={{ display:"flex", alignItems:"center", justifyContent:"space-between", padding:"14px 16px", cursor:"pointer" }}>
-                  <span style={{ fontSize:14, color:C.text }}>Editar perfil</span>
-                  <span style={{ color:C.sub, fontSize:18 }}>›</span>
-                </div>
-              </div>
-              <div style={{ background:C.card, borderRadius:14, overflow:"hidden", marginBottom:16 }}>
-                <div style={{ padding:"14px 16px", borderBottom:"1px solid "+C.border }}>
-                  <div style={{ fontSize:13, fontWeight:600, color:C.text, marginBottom:2 }}>Dados</div>
-                </div>
-                <div style={{ padding:"12px 16px" }}>
-                  <div style={{ fontSize:12, color:C.sub, marginBottom:10 }}>Use o backup para exportar ou importar seus dados financeiros.</div>
-                  <button onClick={() => { onClose(); }} style={{ width:"100%", background:"#1e3a5f33", border:"1px solid "+C.blue+"44", color:C.blue, borderRadius:10, padding:"10px", cursor:"pointer", fontSize:13, fontWeight:600 }}>
-                    Ir para Backup e Restauração
-                  </button>
-                </div>
-              </div>
               <div style={{ background:C.card, borderRadius:14, overflow:"hidden" }}>
                 <div style={{ padding:"14px 16px", borderBottom:"1px solid "+C.border }}>
-                  <div style={{ fontSize:13, fontWeight:600, color:C.text, marginBottom:2 }}>Sobre</div>
+                  <div style={{ fontSize:13, fontWeight:600, color:C.text, marginBottom:2 }}>Idioma</div>
+                  <div style={{ fontSize:12, color:C.sub }}>Escolha o idioma do app</div>
                 </div>
-                <div onClick={() => setView("sobre")} style={{ display:"flex", alignItems:"center", justifyContent:"space-between", padding:"14px 16px", cursor:"pointer" }}>
-                  <span style={{ fontSize:14, color:C.text }}>Sobre o Ara Finance</span>
-                  <span style={{ color:C.sub, fontSize:18 }}>›</span>
+                <div style={{ padding:"14px 16px", display:"flex", gap:10 }}>
+                  {(["pt","en"] as const).map(lang => (
+                    <button
+                      key={lang}
+                      onClick={() => onLanguageChange(lang)}
+                      style={{ flex:1, padding:"12px", borderRadius:12, border:"2px solid "+(currentLanguage===lang?C.blue:C.border), background:currentLanguage===lang?C.blue+"22":"transparent", color:currentLanguage===lang?C.blue:C.sub, cursor:"pointer", fontSize:14, fontWeight:600, display:"flex", flexDirection:"column", alignItems:"center", gap:6 }}
+                    >
+                      <span style={{ fontSize:24 }}>{lang === "pt" ? "🇧🇷" : "🇺🇸"}</span>
+                      <span>{lang === "pt" ? "Português" : "English"}</span>
+                    </button>
+                  ))}
                 </div>
               </div>
             </div>
