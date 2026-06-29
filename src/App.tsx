@@ -13,6 +13,8 @@ import { Lancamentos } from "./screens/Lancamentos";
 import { Historico } from "./screens/Historico";
 import { Metas } from "./screens/Metas";
 import type { Transaction, Account, Goal, PaidBills } from "./types";
+import { translations, type Language } from "./lib/i18n";
+
 
 
 
@@ -47,6 +49,10 @@ export default function App() {
   const [goalModal, setGoalModal]       = useState<any>(null);
   const [showBackup, setShowBackup]     = useState<boolean>(false);
   const [showMenu, setShowMenu]         = useState<boolean>(false);
+  const [language, setLanguage]         = useState<Language>(() => {
+    return (localStorage.getItem("ara-language") as Language) || "pt";
+  });
+  const t = translations[language];
   const [backupText, setBackupText]     = useState<string>("");
   const [importText, setImportText]     = useState<string>("");
   const [backupMsg, setBackupMsg]       = useState<string>("");
@@ -354,6 +360,11 @@ export default function App() {
     await saveData(transactions, accounts, nextTxId, nextAccId, goals, nextGoalId, newPaid);
   };
 
+  const handleLanguageChange = (lang: Language) => {
+    setLanguage(lang);
+    localStorage.setItem("ara-language", lang);
+  };
+
   const recalcBankBalance = async () => {
     const today = new Date().toISOString().slice(0, 10);
     const newAccs = accounts.map(a => {
@@ -442,16 +453,16 @@ export default function App() {
         {/* Dashboard balance */}
         {tab === "dashboard" && (
           <div style={{ marginTop:20, textAlign:"center" }}>
-            <div style={{ fontSize:12, color:C.sub, marginBottom:6 }}>SALDO DO MÊS</div>
+            <div style={{ fontSize:12, color:C.sub, marginBottom:6 }}>{t.saldoDoMes}</div>
             <div style={{ fontSize:38, fontWeight:700, color:balance >= 0 ? C.green : C.red, letterSpacing:-1 }}>{fmt(balance)}</div>
             <div style={{ display:"flex", justifyContent:"center", gap:24, marginTop:12 }}>
               <div style={{ textAlign:"center" }}>
-                <div style={{ fontSize:11, color:C.sub }}>Receitas</div>
+                <div style={{ fontSize:11, color:C.sub }}>{t.receitas}</div>
                 <div style={{ fontSize:16, fontWeight:600, color:C.green }}>{fmt(totalIncome)}</div>
               </div>
               <div style={{ width:1, background:C.border }} />
               <div style={{ textAlign:"center" }}>
-                <div style={{ fontSize:11, color:C.sub }}>Gastos</div>
+                <div style={{ fontSize:11, color:C.sub }}>{t.gastos}</div>
                 <div style={{ fontSize:16, fontWeight:600, color:C.red }}>{fmt(totalExpense)}</div>
               </div>
             </div>
@@ -493,10 +504,10 @@ export default function App() {
 
       {/* Tab bar */}
       <div style={{ position:"fixed", bottom:0, left:0, right:0, background:C.surface, borderTop:"1px solid "+C.border, display:"flex", zIndex:50, paddingBottom:8 }}>
-        {TABS.map(t => (
-          <button key={t} onClick={() => setTab(t)} style={{ flex:1, border:"none", background:"none", cursor:"pointer", padding:"10px 0 4px", display:"flex", flexDirection:"column", alignItems:"center", gap:3 }}>
-            <TabIcon tab={t} active={tab === t} blue={C.blue} sub={C.sub} />
-            <span style={{ fontSize:10, fontWeight:600, color:tab === t ? C.blue : C.sub }}>{TAB_LABELS[t]}</span>
+        {TABS.map(tb => (
+          <button key={tb} onClick={() => setTab(tb)} style={{ flex:1, border:"none", background:"none", cursor:"pointer", padding:"10px 0 4px", display:"flex", flexDirection:"column", alignItems:"center", gap:3 }}>
+            <TabIcon tab={tb} active={tab === tb} blue={C.blue} sub={C.sub} />
+            <span style={{ fontSize:10, fontWeight:600, color:tab === tb ? C.blue : C.sub }}>{t[tb as keyof typeof t] as string}</span>
           </button>
         ))}
       </div>
@@ -949,6 +960,8 @@ export default function App() {
         onSignOut={signOut}
         onSignIn={signIn}
         onSignUp={signUp}
+        currentLanguage={language}
+        onLanguageChange={handleLanguageChange}
       />
 
     </div>
