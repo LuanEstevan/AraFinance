@@ -1,7 +1,7 @@
 import { useState, useMemo, useEffect, useCallback } from "react";
 import { supabase } from "./lib/supabase";
 import { C, EXPENSE_CATS, INCOME_CATS, ALL_CATS, ACCOUNT_COLORS, TABS, TAB_LABELS } from "./lib/constants";
-import { fmt, parseBR, monthLabel, fmtDate, getBrand, getBillingYM, iStyle, btn, compress, decompress , catLabel } from "./lib/helpers";
+import { fmt, parseBR, monthLabel, fmtDate, getBrand, getBillingYM, iStyle, btn , catLabel } from "./lib/helpers";
 import { Modal } from "./components/Modal";
 import { TabIcon } from "./components/TabIcon";
 import { CatIcon } from "./components/CatIcon";
@@ -47,16 +47,11 @@ export default function App() {
   const [accDetail, setAccDetail]       = useState<Account | null>(null);
   const [advanceModal, setAdvanceModal] = useState<any>(null);
   const [goalModal, setGoalModal]       = useState<any>(null);
-  const [showBackup, setShowBackup]     = useState<boolean>(false);
   const [showMenu, setShowMenu]         = useState<boolean>(false);
   const [language, setLanguage]         = useState<Language>(() => {
     return (localStorage.getItem("ara-language") as Language) || "pt";
   });
   const t = translations[language];
-  const [backupText, setBackupText]     = useState<string>("");
-  const [importText, setImportText]     = useState<string>("");
-  const [backupMsg, setBackupMsg]       = useState<string>("");
-  const [importSuccess, setImportSuccess] = useState<boolean>(false);
   const [searchQuery, setSearchQuery]   = useState<string>("");
 
   // Viewport fix
@@ -378,25 +373,6 @@ export default function App() {
     await saveData(transactions, newAccs, nextTxId, nextAccId, goals, nextGoalId);
   };
 
-  const exportData = () => {
-    const compressed = compress({ transactions, accounts, goals, nextTxId, nextAccId, nextGoalId });
-    setBackupText(compressed);
-    setBackupMsg("Selecione o texto abaixo e copie para o Notas.");
-    if (navigator.clipboard) navigator.clipboard.writeText(compressed).then(() => setBackupMsg("Copiado! Cole no Notas.")).catch(() => {});
-  };
-
-  const importData = () => {
-    try {
-      const d = decompress(importText.trim());
-      if (!d.transactions || !d.accounts) { setBackupMsg("Dados inválidos."); return; }
-      setTransactions(d.transactions); setAccounts(d.accounts);
-      if (d.goals) setGoals(d.goals);
-      setNextTxId(d.nextTxId || 1); setNextAccId(d.nextAccId || 1); setNextGoalId(d.nextGoalId || 1);
-      saveData(d.transactions, d.accounts, d.nextTxId || 1, d.nextAccId || 1, d.goals || [], d.nextGoalId || 1);
-      setImportSuccess(true); setImportText(""); setBackupMsg("");
-      setTimeout(() => { setShowBackup(false); setImportSuccess(false); }, 1500);
-    } catch(e) { setBackupMsg("Texto inválido. Cole exatamente o que foi exportado."); }
-  };
 
   // ── Auth loading ───────────────────────────────────────────
   if (authLoading) return (
@@ -686,110 +662,6 @@ export default function App() {
       )}
 
       {/* MODAL: Configurações */}
-      {showBackup && (
-        <Modal title="Configurações" onClose={() => { setShowBackup(false); setBackupText(""); setBackupMsg(""); setImportText(""); setImportSuccess(false); }}>
-          {importSuccess && <div style={{ background:"#14532d", borderRadius:12, padding:14, textAlign:"center", color:C.green, fontWeight:700, marginBottom:16 }}>Dados restaurados!</div>}
-
-          {/* Status */}
-          <div style={{ marginBottom:24 }}>
-            <div style={{ fontSize:11, fontWeight:600, color:C.sub, textTransform:"uppercase", letterSpacing:1, marginBottom:10 }}>Status</div>
-            <div style={{ background:C.card, borderRadius:14 }}>
-              <div style={{ display:"flex", alignItems:"center", gap:14, padding:"14px 16px", borderBottom:"1px solid "+C.border }}>
-                <div style={{ width:38, height:38, borderRadius:10, background:saving?"#1e3a5f33":lastSaved?"#14532d33":"#37415133", display:"flex", alignItems:"center", justifyContent:"center" }}>
-                  {saving
-                    ? <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={C.blue} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-.18-3.32"/></svg>
-                    : lastSaved
-                    ? <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={C.green} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-                    : <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={C.sub} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-                  }
-                </div>
-                <div style={{ flex:1 }}>
-                  <div style={{ fontSize:14, fontWeight:600, color:C.text }}>{saving ? "Salvando..." : lastSaved ? "Dados salvos na nuvem" : "Sem dados salvos"}</div>
-                  <div style={{ fontSize:12, color:lastSaved?C.green:C.sub, marginTop:2 }}>{lastSaved ? fmtDate(lastSaved) : "Adicione dados para salvar"}</div>
-                </div>
-              </div>
-              <div style={{ padding:"12px 16px" }}>
-                <button onClick={recalcBankBalance} style={{ width:"100%", background:"#1e3a5f33", border:"1px solid "+C.blue+"44", color:C.blue, borderRadius:10, padding:"10px", cursor:"pointer", fontSize:13, fontWeight:600, display:"flex", alignItems:"center", justifyContent:"center", gap:8 }}>
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
-                  Recalcular saldo dos bancos
-                </button>
-              </div>
-            </div>
-          </div>
-
-          {/* Backup */}
-          <div style={{ marginBottom:24 }}>
-            <div style={{ fontSize:11, fontWeight:600, color:C.sub, textTransform:"uppercase", letterSpacing:1, marginBottom:10 }}>Backup</div>
-            <div style={{ background:C.card, borderRadius:14, overflow:"hidden" }}>
-              <div style={{ padding:"14px 16px", borderBottom:"1px solid "+C.border }}>
-                <div style={{ display:"flex", alignItems:"center", gap:12, marginBottom:12 }}>
-                  <div style={{ width:38, height:38, borderRadius:10, background:"#14532d33", display:"flex", alignItems:"center", justifyContent:"center" }}>
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#10b981" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-                  </div>
-                  <div>
-                    <div style={{ fontSize:14, fontWeight:600, color:C.text }}>Exportar</div>
-                    <div style={{ fontSize:12, color:C.sub, marginTop:1 }}>Gere o código e salve no Notas.</div>
-                  </div>
-                </div>
-                <button onClick={exportData} style={btn("linear-gradient(135deg,#10b981,#059669)", { marginBottom:backupText?10:0 })}>Gerar código de backup</button>
-                {backupMsg && <div style={{ fontSize:12, color:C.green, margin:"8px 0" }}>{backupMsg}</div>}
-                {backupText && <textarea readOnly style={{ ...iStyle, height:60, resize:"none", fontSize:16 }} value={backupText} onFocus={e => e.target.select()} />}
-              </div>
-              <div style={{ padding:"14px 16px" }}>
-                <div style={{ display:"flex", alignItems:"center", gap:12, marginBottom:12 }}>
-                  <div style={{ width:38, height:38, borderRadius:10, background:"#1e3a5f33", display:"flex", alignItems:"center", justifyContent:"center" }}>
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={C.blue} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-                  </div>
-                  <div>
-                    <div style={{ fontSize:14, fontWeight:600, color:C.text }}>Importar</div>
-                    <div style={{ fontSize:12, color:C.sub, marginTop:1 }}>Cole o código para restaurar seus dados</div>
-                  </div>
-                </div>
-                <textarea style={{ ...iStyle, height:70, resize:"none", fontSize:16, marginBottom:10 }} placeholder="Cole seu código de backup aqui..." value={importText} onChange={e => setImportText(e.target.value)} />
-                <button onClick={importData} style={btn("#f1f5f9")}>Restaurar dados</button>
-              </div>
-            </div>
-          </div>
-
-          {/* Sobre */}
-          <div>
-            <div style={{ fontSize:11, fontWeight:600, color:C.sub, textTransform:"uppercase", letterSpacing:1, marginBottom:10 }}>Sobre o App</div>
-            <div style={{ background:C.card, borderRadius:14, overflow:"hidden" }}>
-              <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", padding:"14px 16px", borderBottom:"1px solid "+C.border }}>
-                <div style={{ display:"flex", alignItems:"center", gap:12 }}>
-                  <AraLogo size={38} id="settings" />
-                  <div>
-                    <div style={{ fontSize:14, fontWeight:600, color:C.text }}>Ara Finance</div>
-                    <div style={{ fontSize:12, color:C.sub, marginTop:1 }}>Controle com clareza. Viva melhor.</div>
-                  </div>
-                </div>
-                <div style={{ fontSize:12, color:C.sub, background:C.surface, borderRadius:8, padding:"4px 10px", fontWeight:600 }}>v2.0.0</div>
-              </div>
-              <div style={{ padding:"12px 16px", borderBottom:"1px solid "+C.border, display:"flex", justifyContent:"space-between" }}>
-                <span style={{ fontSize:13, color:C.sub }}>Início do projeto</span>
-                <span style={{ fontSize:13, color:C.text }}>11 de Abril de 2026</span>
-              </div>
-              <div style={{ padding:"12px 16px", borderBottom:"1px solid "+C.border, display:"flex", justifyContent:"space-between", alignItems:"center" }}>
-                <span style={{ fontSize:13, color:C.sub }}>Desenvolvido por</span>
-                <div style={{ display:"flex", alignItems:"center", gap:6 }}>
-                  <svg width="13" height="13" viewBox="0 0 24 24" fill={C.red} stroke="none"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
-                  <span style={{ fontSize:13, color:C.text, fontWeight:500 }}>Claude e Luan</span>
-                </div>
-              </div>
-              <div style={{ padding:"12px 16px", borderBottom:"1px solid "+C.border, display:"flex", justifyContent:"space-between", alignItems:"center" }}>
-                <div>
-                  <div style={{ fontSize:12, color:C.sub }}>Conta conectada</div>
-                  <div style={{ fontSize:13, color:C.text, marginTop:2 }}>{user?.email}</div>
-                </div>
-                <button onClick={() => { setShowBackup(false); signOut(); }} style={{ background:"#7f1d1d33", border:"1px solid "+C.red+"44", color:C.red, borderRadius:10, padding:"6px 14px", cursor:"pointer", fontSize:13, fontWeight:600, display:"flex", alignItems:"center", gap:6 }}>
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
-                  Sair
-                </button>
-              </div>
-            </div>
-          </div>
-        </Modal>
-      )}
 
       {/* MODAL: Adiantar Parcelas */}
       {advanceModal && (
