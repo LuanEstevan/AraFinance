@@ -9,7 +9,7 @@ export const translations = {
     slogan: "Controle com clareza. Viva melhor.",
 
     // Tabs
-    dashboard: "Dashboard",
+    dashboard: "Início",
     contas: "Contas",
     lancamentos: "Lançamentos",
     historico: "Histórico",
