@@ -403,6 +403,10 @@ export default function App() {
         .modal-backdrop { animation: fadeIn 0.2s ease both; }
         button { -webkit-tap-highlight-color: transparent; }
         * { -webkit-font-smoothing: antialiased; }
+        .recharts-wrapper, .recharts-surface, .recharts-pie, .recharts-pie-sector,
+        .recharts-bar, .recharts-bar-rectangle, .recharts-layer, .recharts-sector {
+          outline: none !important;
+        }
       `}</style>
 
       {/* Header */}
