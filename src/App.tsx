@@ -481,6 +481,16 @@ export default function App() {
         )}
       </div>
 
+      {/* FAB - Floating Action Button */}
+      {tab === "lancamentos" && (
+        <button
+          onClick={openNewTx}
+          style={{ position:"fixed", bottom:90, right:20, width:56, height:56, borderRadius:"50%", background:"linear-gradient(135deg,#7C3AED,#2563EB)", border:"none", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", boxShadow:"0 4px 24px #2563EB55", zIndex:49, animation:"fadeUp 0.2s ease both" }}
+        >
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        </button>
+      )}
+
       {/* Tab bar */}
       <div style={{ position:"fixed", bottom:0, left:0, right:0, background:C.surface, borderTop:"1px solid "+C.border, display:"flex", zIndex:50, paddingBottom:8 }}>
         {TABS.map(tb => (
