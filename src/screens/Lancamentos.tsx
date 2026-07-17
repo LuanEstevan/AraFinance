@@ -20,8 +20,6 @@ interface LancamentosProps {
 export function Lancamentos({ sorted, accounts, selectedMonth, balance, totalExpense, onNew, onEdit, onViewAll }: LancamentosProps) {
   return (
     <div>
-      <button onClick={onNew} style={btn("#f1f5f9", { marginBottom:12 })}>Novo Lançamento</button>
-
       <div style={{ background:C.card, borderRadius:14, padding:16, marginBottom:16 }}>
         <div style={{ fontSize:12, color:C.sub, lineHeight:1.7, display:"flex", gap:10, alignItems:"flex-start" }}>
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={C.sub} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink:0, marginTop:2 }}><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
@@ -65,7 +63,7 @@ export function Lancamentos({ sorted, accounts, selectedMonth, balance, totalExp
         <div style={{ textAlign:"center", padding:"40px 20px", color:C.sub, display:"flex", flexDirection:"column", alignItems:"center" }}>
           <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke={C.muted} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ marginBottom:12 }}><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
           <div style={{ fontSize:14, color:C.text, marginBottom:4 }}>Nenhum lançamento ainda</div>
-          <div style={{ fontSize:12 }}>Toque em "Novo Lançamento" para começar</div>
+          <div style={{ fontSize:12 }}>Toque no <b style={{ color:C.blue }}>+</b> para começar</div>
         </div>
       )}
     </div>
