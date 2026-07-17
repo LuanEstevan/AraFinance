@@ -62,9 +62,9 @@ export function Dashboard({
         <div style={{ background:C.card, borderRadius:16, padding:20, marginBottom:12 }}>
           <div style={{ fontSize:13, fontWeight:600, color:C.sub, marginBottom:16, textTransform:"uppercase", letterSpacing:1 }}>Gastos por Categoria</div>
           <ResponsiveContainer width="100%" height={180}>
-            <PieChart>
-              <Pie data={byCategory} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={70} innerRadius={40} paddingAngle={2} stroke="none">
-                {byCategory.map((e, i) => <Cell key={i} fill={e.color} stroke="none" />)}
+            <PieChart style={{ outline:"none" }}>
+              <Pie data={byCategory} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={70} innerRadius={40} paddingAngle={2} stroke="none" style={{ outline:"none" }}>
+                {byCategory.map((e, i) => <Cell key={i} fill={e.color} stroke="none" style={{ outline:"none" }} />)}
               </Pie>
               <Tooltip formatter={(v: any, name: string) => [fmt(v), name]} {...tooltipStyle} />
             </PieChart>
