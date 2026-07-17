@@ -9,7 +9,6 @@ import { AraLogo } from "./components/AraLogo";
 import { SideMenu } from "./components/SideMenu";
 import { Dashboard } from "./screens/Dashboard";
 import { Contas } from "./screens/Contas";
-import { Lancamentos } from "./screens/Lancamentos";
 import { Historico } from "./screens/Historico";
 import { Metas } from "./screens/Metas";
 import type { Transaction, Account, Goal, PaidBills } from "./types";
@@ -454,7 +453,6 @@ export default function App() {
             <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-end" }}>
               <div style={{ fontSize:26, fontWeight:700, color:C.text, letterSpacing:-0.5 }}>
                 {tab === "contas"      && "Contas"}
-                {tab === "lancamentos" && "Lançamentos"}
                 {tab === "historico"   && "Histórico"}
                 {tab === "metas"       && "Metas"}
               </div>
@@ -462,12 +460,6 @@ export default function App() {
                 <div style={{ textAlign:"right" }}>
                   <div style={{ fontSize:11, color:C.sub }}>{banks.length} banco{banks.length !== 1 ? "s" : ""} - {cards.length} {cards.length === 1 ? "cartão" : "cartões"}</div>
                   <div style={{ fontSize:13, fontWeight:600, color:C.green, marginTop:2 }}>{fmt(totalBankBalance)}</div>
-                </div>
-              )}
-              {tab === "lancamentos" && (
-                <div style={{ textAlign:"right" }}>
-                  <div style={{ fontSize:11, color:C.sub }}>{monthLabel(selectedMonth)}</div>
-                  <div style={{ fontSize:13, fontWeight:600, color:balance >= 0 ? C.green : C.red, marginTop:2 }}>{fmt(balance)}</div>
                 </div>
               )}
               {tab === "historico" && (
@@ -493,8 +485,8 @@ export default function App() {
         {/* Center + button */}
         <div style={{ flex:1, display:"flex", alignItems:"center", justifyContent:"center", paddingBottom:4 }}>
           <button
-            onClick={() => { setTab("lancamentos"); openNewTx(); }}
-            style={{ width:52, height:52, borderRadius:"50%", background:"linear-gradient(135deg,#7C3AED,#2563EB)", border:"none", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", boxShadow:"0 4px 20px #2563EB44", marginTop:-16 }}
+            onClick={() => { openNewTx(); }}
+            style={{ width:52, height:52, borderRadius:"50%", background:"linear-gradient(135deg,#2563EB,#7C3AED)", border:"none", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", boxShadow:"0 4px 20px #7C3AED44", marginTop:-16 }}
           >
             <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
           </button>
@@ -533,18 +525,6 @@ export default function App() {
             onNewAcc={openNewAcc}
             onAccDetail={setAccDetail}
             onTogglePaid={togglePaidBill}
-          />
-        )}
-        {tab === "lancamentos" && (
-          <Lancamentos
-            sorted={sorted}
-            accounts={accounts}
-            selectedMonth={selectedMonth}
-            balance={balance}
-            totalExpense={totalExpense}
-            onNew={openNewTx}
-            onEdit={openEditTx}
-            onViewAll={() => setTab("historico")}
           />
         )}
         {tab === "historico" && (
