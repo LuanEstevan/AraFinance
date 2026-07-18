@@ -23,7 +23,7 @@ export const getBrand = (name: string): BrandInfo | null => {
 
 export const monthLabel = (ym: string): string => {
   const [y, m] = ym.split("-");
-  return MONTHS[parseInt(m) - 1] + " " + y;
+  return MONTHS[parseInt(m) - 1] + ", " + y;
 };
 
 export const fmtDate = (d: Date | null): string =>
