@@ -447,30 +447,6 @@ export default function App() {
           </div>
         )}
 
-        {/* Other tab headers */}
-        {tab !== "dashboard" && (
-          <div style={{ marginTop:16, paddingBottom:16, borderBottom:"1px solid "+C.border }}>
-            <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-end" }}>
-              <div style={{ fontSize:26, fontWeight:700, color:C.text, letterSpacing:-0.5 }}>
-                {tab === "contas"      && "Contas"}
-                {tab === "historico"   && "Histórico"}
-                {tab === "metas"       && "Metas"}
-              </div>
-              {tab === "contas" && accounts.length > 0 && (
-                <div style={{ textAlign:"right" }}>
-                  <div style={{ fontSize:11, color:C.sub }}>{banks.length} banco{banks.length !== 1 ? "s" : ""} - {cards.length} {cards.length === 1 ? "cartão" : "cartões"}</div>
-                  <div style={{ fontSize:13, fontWeight:600, color:C.green, marginTop:2 }}>{fmt(totalBankBalance)}</div>
-                </div>
-              )}
-              {tab === "historico" && (
-                <div style={{ textAlign:"right" }}>
-                  <div style={{ fontSize:11, color:C.sub }}>{sorted.length} lançamentos</div>
-                  <div style={{ fontSize:13, fontWeight:600, color:C.red, marginTop:2 }}>{fmt(totalExpense)}</div>
-                </div>
-              )}
-            </div>
-          </div>
-        )}
       </div>
 
       {/* Tab bar */}
