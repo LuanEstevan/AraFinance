@@ -60,7 +60,7 @@ export function Dashboard({
     <div>
       {byCategory.length > 0 && (
         <div style={{ background:C.card, borderRadius:16, padding:20, marginBottom:12 }}>
-          <div style={{ fontSize:13, fontWeight:600, color:C.sub, marginBottom:16, textTransform:"uppercase", letterSpacing:1 }}>Gastos por Categoria</div>
+          <div style={{ fontSize:13, fontWeight:600, color:C.sub, marginBottom:16, textTransform:"uppercase", letterSpacing:1 }}>Gastos por Categorias</div>
           <ResponsiveContainer width="100%" height={180}>
             <PieChart style={{ outline:"none" }}>
               <Pie data={byCategory} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={70} innerRadius={40} paddingAngle={2} stroke="none" style={{ outline:"none" }}>
@@ -108,7 +108,7 @@ export function Dashboard({
 
       {data6.some(d => d.receita > 0 || d.gasto > 0) && (
         <div style={{ background:C.card, borderRadius:16, padding:20, marginBottom:12 }}>
-          <div style={{ fontSize:13, fontWeight:600, color:C.sub, marginBottom:16, textTransform:"uppercase", letterSpacing:1 }}>Comparativo 6 Meses</div>
+          <div style={{ fontSize:13, fontWeight:600, color:C.sub, marginBottom:16, textTransform:"uppercase", letterSpacing:1 }}>Comparativo de 6 Meses</div>
           <ResponsiveContainer width="100%" height={160}>
             <BarChart data={data6} barCategoryGap="25%" barGap={3}>
               <XAxis dataKey="mes" tick={{ fill:C.sub, fontSize:11 }} axisLine={false} tickLine={false} />
