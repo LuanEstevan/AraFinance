@@ -631,7 +631,7 @@ export default function App() {
                 ))}
               </div>
             </div>
-            <button onClick={saveAcc} style={btn("#f1f5f9")}>{accModal.editId != null ? "Salvar alterações" : "Adicionar"}</button>
+            <button onClick={saveAcc} style={btn("linear-gradient(135deg,#2563EB,#7C3AED)")}>{accModal.editId != null ? "Salvar alterações" : "Adicionar"}</button>
             {accModal.editId != null && <button onClick={async () => { await deleteAccount(accModal.editId); }} style={btn("none", { border:"1px solid "+C.red+"44", color:C.red })}>Remover conta</button>}
           </div>
         </Modal>
