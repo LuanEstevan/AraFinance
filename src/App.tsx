@@ -599,10 +599,10 @@ export default function App() {
 
       {/* MODAL: Conta */}
       {accModal && (
-        <Modal title={accModal.editId != null ? "Editar Conta" : "Adicionar Conta"} onClose={() => setAccModal(null)}>
+        <Modal title={accModal.editId != null ? "Editar Conta" : ""} onClose={() => setAccModal(null)}>
           <div style={{ display:"flex", gap:8, marginBottom:16, background:C.card, borderRadius:12, padding:4 }}>
             {["bank","card"].map(k => (
-              <button key={k} onClick={() => setAccModal((f: any) => ({ ...f, kind:k }))} style={{ flex:1, padding:"10px", borderRadius:10, border:"none", cursor:"pointer", fontSize:13, fontWeight:600, background:accModal.kind===k?C.blue:"transparent", color:accModal.kind===k?"#fff":C.sub }}>
+              <button key={k} onClick={() => setAccModal((f: any) => ({ ...f, kind:k }))} style={{ flex:1, padding:"10px", borderRadius:10, border:"none", cursor:"pointer", fontSize:13, fontWeight:600, background:accModal.kind===k?"linear-gradient(135deg,#2563EB,#7C3AED)":"transparent", color:accModal.kind===k?"#fff":C.sub }}>
                 {k === "bank" ? "Banco" : "Cartão"}
               </button>
             ))}
