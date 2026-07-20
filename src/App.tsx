@@ -618,7 +618,12 @@ export default function App() {
                 <input style={iStyle} placeholder="Ex: 1.500,00" type="text" inputMode="decimal" value={accModal.balance} onChange={e => setAccModal((f: any) => ({ ...f, balance:e.target.value }))} />
               </div>
             )}
-            {accModal.kind === "card" && <input style={iStyle} placeholder="Limite total (opcional)" type="text" inputMode="decimal" value={accModal.limit} onChange={e => setAccModal((f: any) => ({ ...f, limit:e.target.value }))} />}
+            {accModal.kind === "card" && (
+              <div>
+                <div style={{ fontSize:12, color:C.sub, marginBottom:6 }}>Limite total <span style={{ color:C.muted }}>(opcional)</span></div>
+                <input style={iStyle} placeholder="Ex: 5.000,00" type="text" inputMode="decimal" value={accModal.limit} onChange={e => setAccModal((f: any) => ({ ...f, limit:e.target.value }))} />
+              </div>
+            )}
             {accModal.kind === "card" && (
               <div style={{ display:"flex", gap:10 }}>
                 <div style={{ flex:1 }}>
