@@ -612,17 +612,22 @@ export default function App() {
               <div style={{ fontSize:12, color:C.sub, marginBottom:6 }}>Nome da conta</div>
               <input style={iStyle} placeholder="Ex: Nubank, Bradesco..." value={accModal.name} onChange={e => setAccModal((f: any) => ({ ...f, name:e.target.value }))} />
             </div>
-            {accModal.kind === "bank" && <input style={iStyle} placeholder="Saldo atual" type="text" inputMode="decimal" value={accModal.balance} onChange={e => setAccModal((f: any) => ({ ...f, balance:e.target.value }))} />}
+            {accModal.kind === "bank" && (
+              <div>
+                <div style={{ fontSize:12, color:C.sub, marginBottom:6 }}>Saldo atual <span style={{ color:C.muted }}>(opcional)</span></div>
+                <input style={iStyle} placeholder="Ex: 1.500,00" type="text" inputMode="decimal" value={accModal.balance} onChange={e => setAccModal((f: any) => ({ ...f, balance:e.target.value }))} />
+              </div>
+            )}
             {accModal.kind === "card" && <input style={iStyle} placeholder="Limite total (opcional)" type="text" inputMode="decimal" value={accModal.limit} onChange={e => setAccModal((f: any) => ({ ...f, limit:e.target.value }))} />}
             {accModal.kind === "card" && (
               <div style={{ display:"flex", gap:10 }}>
                 <div style={{ flex:1 }}>
                   <div style={{ fontSize:12, color:C.sub, marginBottom:6 }}>Dia do fechamento</div>
-                  <input style={{ ...iStyle, textAlign:"center", fontSize:18, fontWeight:600 }} placeholder="15" type="text" inputMode="numeric" maxLength={2} value={accModal.closingDay || ""} onChange={e => setAccModal((f: any) => ({ ...f, closingDay:e.target.value.replace(/\D/g,"") }))} />
+                  <input style={{ ...iStyle, textAlign:"center", fontSize:16, fontWeight:600 }} placeholder="15" type="text" inputMode="numeric" maxLength={2} value={accModal.closingDay || ""} onChange={e => setAccModal((f: any) => ({ ...f, closingDay:e.target.value.replace(/\D/g,"") }))} />
                 </div>
                 <div style={{ flex:1 }}>
                   <div style={{ fontSize:12, color:C.sub, marginBottom:6 }}>Dia do vencimento</div>
-                  <input style={{ ...iStyle, textAlign:"center", fontSize:18, fontWeight:600 }} placeholder="22" type="text" inputMode="numeric" maxLength={2} value={accModal.dueDay || ""} onChange={e => setAccModal((f: any) => ({ ...f, dueDay:e.target.value.replace(/\D/g,"") }))} />
+                  <input style={{ ...iStyle, textAlign:"center", fontSize:16, fontWeight:600 }} placeholder="22" type="text" inputMode="numeric" maxLength={2} value={accModal.dueDay || ""} onChange={e => setAccModal((f: any) => ({ ...f, dueDay:e.target.value.replace(/\D/g,"") }))} />
                 </div>
               </div>
             )}
