@@ -720,7 +720,7 @@ export default function App() {
       {/* MODAL: Detalhe da Conta */}
       {accDetail && (() => {
         const brand    = getBrand(accDetail.name);
-        const ac       = brand ? brand.color : ACCOUNT_COLORS[accDetail.colorIdx % ACCOUNT_COLORS.length];
+        const ac       = ACCOUNT_COLORS[accDetail.colorIdx % ACCOUNT_COLORS.length];
         const monthTxs = transactions.filter(t => String(t.accountId) === String(accDetail.id) && getBillingYM(t.date, t.accountId, accounts) === selectedMonth).sort((a, b) => b.date.localeCompare(a.date));
         const monthSpend  = monthTxs.filter(t => t.type === "expense").reduce((s, t) => s + t.amount, 0);
         const monthIncome = monthTxs.filter(t => t.type === "income").reduce((s, t) => s + t.amount, 0);
