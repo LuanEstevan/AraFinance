@@ -44,7 +44,7 @@ export function Contas({ accounts, transactions, selectedMonth, paidBills, spend
           {banks.map(a => {
             const brand = getBrand(a.name);
             const bg = brand ? brand.bg : C.card;
-            const ac = brand ? brand.color : ACCOUNT_COLORS[a.colorIdx % ACCOUNT_COLORS.length];
+            const ac = ACCOUNT_COLORS[a.colorIdx % ACCOUNT_COLORS.length];
             return (
               <div key={a.id} onClick={() => onAccDetail(a)} style={{ background:bg, borderRadius:16, padding:16, marginBottom:10, border:"1px solid "+ac+"33", cursor:"pointer" }}>
                 <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center" }}>
@@ -83,7 +83,7 @@ export function Contas({ accounts, transactions, selectedMonth, paidBills, spend
             const barC       = pct > 80 ? C.red : pct > 50 ? "#f59e0b" : C.green;
             const brand = getBrand(a.name);
             const bg = brand ? brand.bg : C.card;
-            const ac = brand ? brand.color : ACCOUNT_COLORS[a.colorIdx % ACCOUNT_COLORS.length];
+            const ac = ACCOUNT_COLORS[a.colorIdx % ACCOUNT_COLORS.length];
             const isPaid = paidBills[a.id + "-" + selectedMonth];
             return (
               <div key={a.id} onClick={() => onAccDetail(a)} style={{ background:bg, borderRadius:16, padding:16, marginBottom:10, border:"1px solid "+ac+"33", cursor:"pointer" }}>
