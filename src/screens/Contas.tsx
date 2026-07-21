@@ -43,8 +43,9 @@ export function Contas({ accounts, transactions, selectedMonth, paidBills, spend
           <div style={{ fontSize:11, fontWeight:600, color:C.sub, textTransform:"uppercase", letterSpacing:1, marginBottom:10 }}>Bancos</div>
           {banks.map(a => {
             const brand = getBrand(a.name);
-            const ac = ACCOUNT_COLORS[a.colorIdx % ACCOUNT_COLORS.length];
-            const bg = ac + "B3";
+            const brand = getBrand(a.name);
+            const bg = brand ? brand.bg : ACCOUNT_COLORS[a.colorIdx % ACCOUNT_COLORS.length] + "22";
+            const ac = brand ? brand.color : ACCOUNT_COLORS[a.colorIdx % ACCOUNT_COLORS.length];
             return (
               <div key={a.id} onClick={() => onAccDetail(a)} style={{ background:bg, borderRadius:16, padding:16, marginBottom:10, border:"1px solid "+ac+"33", cursor:"pointer" }}>
                 <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center" }}>
@@ -82,8 +83,9 @@ export function Contas({ accounts, transactions, selectedMonth, paidBills, spend
             const pct        = limit > 0 ? Math.min((committed / limit) * 100, 100) : 0;
             const barC       = pct > 80 ? C.red : pct > 50 ? "#f59e0b" : C.green;
             const brand = getBrand(a.name);
-            const ac = ACCOUNT_COLORS[a.colorIdx % ACCOUNT_COLORS.length];
-            const bg = ac + "B3";
+            const brand = getBrand(a.name);
+            const bg = brand ? brand.bg : ACCOUNT_COLORS[a.colorIdx % ACCOUNT_COLORS.length] + "22";
+            const ac = brand ? brand.color : ACCOUNT_COLORS[a.colorIdx % ACCOUNT_COLORS.length];
             const isPaid = paidBills[a.id + "-" + selectedMonth];
             return (
               <div key={a.id} onClick={() => onAccDetail(a)} style={{ background:bg, borderRadius:16, padding:16, marginBottom:10, border:"1px solid "+ac+"33", cursor:"pointer" }}>
