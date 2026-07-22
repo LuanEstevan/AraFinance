@@ -43,7 +43,6 @@ export function Contas({ accounts, transactions, selectedMonth, paidBills, spend
           <div style={{ fontSize:11, fontWeight:600, color:C.sub, textTransform:"uppercase", letterSpacing:1, marginBottom:10 }}>Bancos</div>
           {banks.map(a => {
             const brand = getBrand(a.name);
-            const brand = getBrand(a.name);
             const bg = brand ? brand.bg : ACCOUNT_COLORS[a.colorIdx % ACCOUNT_COLORS.length] + "22";
             const ac = brand ? brand.color : ACCOUNT_COLORS[a.colorIdx % ACCOUNT_COLORS.length];
             return (
@@ -82,7 +81,6 @@ export function Contas({ accounts, transactions, selectedMonth, paidBills, spend
             const available  = limit - committed;
             const pct        = limit > 0 ? Math.min((committed / limit) * 100, 100) : 0;
             const barC       = pct > 80 ? C.red : pct > 50 ? "#f59e0b" : C.green;
-            const brand = getBrand(a.name);
             const brand = getBrand(a.name);
             const bg = brand ? brand.bg : ACCOUNT_COLORS[a.colorIdx % ACCOUNT_COLORS.length] + "22";
             const ac = brand ? brand.color : ACCOUNT_COLORS[a.colorIdx % ACCOUNT_COLORS.length];
