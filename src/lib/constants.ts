@@ -80,3 +80,27 @@ export const TAB_LABELS: Record<string, string> = {
   historico:    "Histórico",
   metas:        "Metas",
 };
+
+// ── Brand default color index ─────────────────────────────────
+// Maps normalized bank name keywords to ACCOUNT_COLORS index
+export const BRAND_COLOR_IDX: Record<string, number> = {
+  "nubank":      1,  // #8b5cf6 roxo
+  "itau":        7,  // #f97316 laranja
+  "itauu":       7,
+  "bradesco":    3,  // #ef4444 vermelho
+  "bb":          4,  // #f59e0b amarelo
+  "caixa":       0,  // #3b82f6 azul
+  "inter":       7,  // #f97316 laranja
+  "c6":          9,  // #64748b cinza
+  "santander":   3,  // #ef4444 vermelho
+  "mercadopago": 0,  // #3b82f6 azul
+  "mercado":     0,
+  "xp":          9,  // #64748b cinza
+  "amex":        5,  // #10b981 verde
+  "american":    5,
+  "next":        5,  // #10b981 verde
+  "picpay":      5,  // #10b981 verde
+  "sicoob":      0,  // #3b82f6 azul
+  "sicredi":     5,  // #10b981 verde
+  "banco":       0,  // azul genérico
+};

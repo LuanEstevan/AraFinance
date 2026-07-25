@@ -128,3 +128,14 @@ export const decompress = (str: string): any => {
     return JSON.parse(str);
   }
 };
+
+// ── Brand default color index ─────────────────────────────────
+import { BRAND_COLOR_IDX } from "./constants";
+
+export const getBrandColorIdx = (name: string): number => {
+  const k = normalize(name);
+  for (const [brand, idx] of Object.entries(BRAND_COLOR_IDX)) {
+    if (k.includes(brand)) return idx;
+  }
+  return 0; // default azul
+};
