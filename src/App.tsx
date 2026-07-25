@@ -1,7 +1,7 @@
 import { useState, useMemo, useEffect, useCallback } from "react";
 import { supabase } from "./lib/supabase";
 import { C, EXPENSE_CATS, INCOME_CATS, ALL_CATS, ACCOUNT_COLORS, TABS, TAB_LABELS } from "./lib/constants";
-import { fmt, parseBR, monthLabel, fmtDate, getBrand, getBillingYM, iStyle, btn , catLabel } from "./lib/helpers";
+import { fmt, parseBR, monthLabel, fmtDate, getBrand, getBillingYM, iStyle, btn, catLabel, getBrandColorIdx } from "./lib/helpers";
 import { Modal } from "./components/Modal";
 import { TabIcon } from "./components/TabIcon";
 import { CatIcon } from "./components/CatIcon";
@@ -610,7 +610,11 @@ export default function App() {
           <div style={{ display:"flex", flexDirection:"column", gap:12 }}>
             <div>
               <div style={{ fontSize:12, color:C.sub, marginBottom:6 }}>Nome da conta</div>
-              <input style={iStyle} placeholder="Ex: Nubank, Bradesco..." value={accModal.name} onChange={e => setAccModal((f: any) => ({ ...f, name:e.target.value }))} />
+              <input style={iStyle} placeholder="Ex: Nubank, Bradesco..." value={accModal.name} onChange={e => {
+                const name = e.target.value;
+                const colorIdx = accModal.editId != null ? accModal.colorIdx : getBrandColorIdx(name);
+                setAccModal((f: any) => ({ ...f, name, colorIdx }));
+              }} />
             </div>
             {accModal.kind === "bank" && (
               <div>
