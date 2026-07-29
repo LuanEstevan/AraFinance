@@ -104,3 +104,31 @@ export const BRAND_COLOR_IDX: Record<string, number> = {
   "sicredi":     5,  // #10b981 verde
   "banco":       0,  // azul genérico
 };
+
+// ── Brand default color index ─────────────────────────────────
+export const BRAND_COLOR_IDX: Record<string, number> = {
+  "nubank":     1,  // roxo
+  "itau":       7,  // laranja
+  "bradesco":   3,  // vermelho
+  "bb":         4,  // amarelo
+  "caixa":      0,  // azul
+  "inter":      7,  // laranja
+  "c6":         9,  // cinza
+  "santander":  3,  // vermelho
+  "mercado":    0,  // azul
+  "xp":         9,  // cinza
+  "amex":       5,  // verde
+  "american":   5,  // verde
+  "next":       5,  // verde
+  "picpay":     5,  // verde
+  "sicoob":     0,  // azul
+  "sicredi":    5,  // verde
+};
+
+export const getBrandColorIdx = (name: string): number => {
+  const k = name.toLowerCase().trim().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+  for (const [brand, idx] of Object.entries(BRAND_COLOR_IDX)) {
+    if (k.includes(brand)) return idx;
+  }
+  return 0;
+};
