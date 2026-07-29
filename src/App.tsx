@@ -1,7 +1,7 @@
 import { useState, useMemo, useEffect, useCallback } from "react";
 import { supabase } from "./lib/supabase";
-import { C, EXPENSE_CATS, INCOME_CATS, ALL_CATS, ACCOUNT_COLORS, TABS, TAB_LABELS } from "./lib/constants";
-import { fmt, parseBR, monthLabel, fmtDate, getBrand, getBillingYM, iStyle, btn, catLabel, getBrandColorIdx } from "./lib/helpers";
+import { C, EXPENSE_CATS, INCOME_CATS, ALL_CATS, ACCOUNT_COLORS, TABS, TAB_LABELS, getBrandColorIdx } from "./lib/constants";
+import { fmt, parseBR, monthLabel, fmtDate, getBrand, getBillingYM, iStyle, btn, catLabel } from "./lib/helpers";
 import { Modal } from "./components/Modal";
 import { TabIcon } from "./components/TabIcon";
 import { CatIcon } from "./components/CatIcon";
