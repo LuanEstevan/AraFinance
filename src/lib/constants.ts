@@ -82,51 +82,27 @@ export const TAB_LABELS: Record<string, string> = {
 };
 
 // ── Brand default color index ─────────────────────────────────
-// Maps normalized bank name keywords to ACCOUNT_COLORS index
 export const BRAND_COLOR_IDX: Record<string, number> = {
-  "nubank":      1,  // #8b5cf6 roxo
-  "itau":        7,  // #f97316 laranja
-  "itauu":       7,
-  "bradesco":    3,  // #ef4444 vermelho
-  "bb":          4,  // #f59e0b amarelo
-  "caixa":       0,  // #3b82f6 azul
-  "inter":       7,  // #f97316 laranja
-  "c6":          9,  // #64748b cinza
-  "santander":   3,  // #ef4444 vermelho
-  "mercadopago": 0,  // #3b82f6 azul
-  "mercado":     0,
-  "xp":          9,  // #64748b cinza
-  "amex":        5,  // #10b981 verde
-  "american":    5,
-  "next":        5,  // #10b981 verde
-  "picpay":      5,  // #10b981 verde
-  "sicoob":      0,  // #3b82f6 azul
-  "sicredi":     5,  // #10b981 verde
-  "banco":       0,  // azul genérico
-};
-
-// ── Brand default color index ─────────────────────────────────
-export const BRAND_COLOR_IDX: Record<string, number> = {
-  "nubank":     1,  // roxo
-  "itau":       7,  // laranja
-  "bradesco":   3,  // vermelho
-  "bb":         4,  // amarelo
-  "caixa":      0,  // azul
-  "inter":      7,  // laranja
-  "c6":         9,  // cinza
-  "santander":  3,  // vermelho
-  "mercado":    0,  // azul
-  "xp":         9,  // cinza
-  "amex":       5,  // verde
-  "american":   5,  // verde
-  "next":       5,  // verde
-  "picpay":     5,  // verde
-  "sicoob":     0,  // azul
-  "sicredi":    5,  // verde
+  "nubank":    1,
+  "itau":      7,
+  "bradesco":  3,
+  "bb":        4,
+  "caixa":     0,
+  "inter":     7,
+  "c6":        9,
+  "santander": 3,
+  "mercado":   0,
+  "xp":        9,
+  "amex":      5,
+  "american":  5,
+  "next":      5,
+  "picpay":    5,
+  "sicoob":    0,
+  "sicredi":   5,
 };
 
 export const getBrandColorIdx = (name: string): number => {
-  const k = name.toLowerCase().trim().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+  const k = name.toLowerCase().trim().normalize("NFD").replace(/[̀-ͯ]/g, "");
   for (const [brand, idx] of Object.entries(BRAND_COLOR_IDX)) {
     if (k.includes(brand)) return idx;
   }
