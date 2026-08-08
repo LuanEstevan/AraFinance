@@ -1,4 +1,4 @@
-import { C, ACCOUNT_COLORS, BANK_BRANDS } from "../lib/constants";
+import { C, ACCOUNT_COLORS } from "../lib/constants";
 import { fmt, parseBR, monthLabel } from "../lib/helpers";
 import { btn } from "../lib/helpers";
 import type { Transaction, Account, PaidBills } from "../types";
@@ -48,10 +48,7 @@ export function Contas({ accounts, transactions, selectedMonth, paidBills, spend
               <div key={a.id} onClick={() => onAccDetail(a)} style={{ background:bg, borderRadius:16, padding:16, marginBottom:10, border:"1px solid "+ac+"33", cursor:"pointer" }}>
                 <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center" }}>
                   <div style={{ display:"flex", alignItems:"center", gap:12 }}>
-                    {brand
-                      ? <img src={brand.logo} alt={a.name} style={{ width:40, height:40, borderRadius:12, objectFit:"contain", background:"#fff", padding:4 }} onError={e => (e.target as HTMLImageElement).style.display = "none"} />
-                      : <div style={{ width:40, height:40, borderRadius:12, background:ac+"33", display:"flex", alignItems:"center", justifyContent:"center" }}><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={ac} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="3" y1="22" x2="21" y2="22"/><line x1="6" y1="18" x2="6" y2="11"/><line x1="10" y1="18" x2="10" y2="11"/><line x1="14" y1="18" x2="14" y2="11"/><line x1="18" y1="18" x2="18" y2="11"/><polygon points="12 2 20 7 4 7"/></svg></div>
-                    }
+                    <div style={{ width:40, height:40, borderRadius:12, background:ac+"33", display:"flex", alignItems:"center", justifyContent:"center" }}><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={ac} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="3" y1="22" x2="21" y2="22"/><line x1="6" y1="18" x2="6" y2="11"/><line x1="10" y1="18" x2="10" y2="11"/><line x1="14" y1="18" x2="14" y2="11"/><line x1="18" y1="18" x2="18" y2="11"/><polygon points="12 2 20 7 4 7"/></svg></div>
                     <div>
                       <div style={{ fontWeight:700, fontSize:15, color:C.text }}>{a.name}</div>
                       <div style={{ fontSize:11, color:C.sub, marginTop:2 }}>Gasto este mês: <span style={{ color:C.red }}>{fmt(spendByAccount[a.id] || 0)}</span></div>
@@ -88,10 +85,7 @@ export function Contas({ accounts, transactions, selectedMonth, paidBills, spend
                 <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start" }}>
                   <div style={{ flex:1 }}>
                     <div style={{ display:"flex", alignItems:"center", gap:10, marginBottom:10 }}>
-                      {brand
-                        ? <img src={brand.logo} alt={a.name} style={{ width:36, height:36, borderRadius:10, objectFit:"contain", background:"#fff", padding:3 }} onError={e => (e.target as HTMLImageElement).style.display = "none"} />
-                        : <div style={{ width:36, height:36, borderRadius:10, background:ac+"33", display:"flex", alignItems:"center", justifyContent:"center" }}><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={ac} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="5" width="20" height="14" rx="3"/><line x1="2" y1="10" x2="22" y2="10"/></svg></div>
-                      }
+                      <div style={{ width:36, height:36, borderRadius:10, background:ac+"33", display:"flex", alignItems:"center", justifyContent:"center" }}><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={ac} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="5" width="20" height="14" rx="3"/><line x1="2" y1="10" x2="22" y2="10"/></svg></div>
                       <div style={{ fontWeight:700, fontSize:15, color:C.text }}>{a.name}</div>
                     </div>
                     {limit > 0 ? (
