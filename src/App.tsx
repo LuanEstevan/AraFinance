@@ -224,9 +224,13 @@ export default function App() {
   const openEditAcc = useCallback((a: Account) => setAccModal({ ...a, balance:String(a.balance), limit:String(a.limit || ""), editId:a.id }), []);
 
   // Save transaction
+  const [txSaving, setTxSaving] = useState<boolean>(false);
+
   const saveTx = async (updateAll: boolean) => {
+    if (txSaving) return;
+    setTxSaving(true);
     const f = txModal;
-    if (!f.description || !f.amount) return;
+    if (!f.description || !f.amount) { setTxSaving(false); return; }
     const totalAmt = parseBR(f.amount);
     const installments = parseInt(f.installments) || 1;
     let newTxs: Transaction[];
@@ -276,6 +280,7 @@ export default function App() {
 
     setTransactions(newTxs); setAccounts(newAccs); setNextTxId(newId); setTxModal(null);
     await saveData(newTxs, newAccs, newId, nextAccId, goals, nextGoalId);
+    setTxSaving(false);
   };
 
   const deleteTx = async (id: number) => {
@@ -584,7 +589,7 @@ export default function App() {
               <div style={{ fontSize:12, color:C.sub, marginBottom:6 }}>Data</div>
               <input type="date" style={iStyle} value={txModal.date} onChange={e => setTxModal((f: any) => ({ ...f, date:e.target.value }))} />
             </div>
-            <button onClick={() => saveTx(true)} style={btn("#f1f5f9")}>{txModal.editId != null ? "Salvar alterações" : "Adicionar lançamento"}</button>
+            <button onClick={() => saveTx(true)} disabled={txSaving} style={{ ...btn("#f1f5f9"), opacity:txSaving?0.6:1 }}>{txSaving ? "Salvando..." : txModal.editId != null ? "Salvar alterações" : "Adicionar lançamento"}</button>
             {txModal.editId != null && txModal.recurringGroup && (
               <button onClick={async () => {
                 const newTxs = transactions.filter(t => !(t.recurringGroup === txModal.recurringGroup && t.date >= txModal.date));
