@@ -116,6 +116,11 @@ export function Historico({ sorted, transactions, accounts, selectedMonth, searc
         const acc = accounts.find(a => String(a.id) === String(t.accountId));
         const catColor = cat?.color || "#94a3b8";
         const accColor = acc ? ACCOUNT_COLORS[acc.colorIdx % ACCOUNT_COLORS.length] : C.sub;
+        let displayDescription = t.description;
+        if (t.installmentGroup && t.installmentIndex) {
+          const groupSize = groups[t.installmentGroup]?.length || t.installmentTotal || t.installmentIndex;
+          displayDescription = t.description.replace(/\s\d+\/\d+$/, "") + " " + t.installmentIndex + "/" + groupSize;
+        }
         return (
           <div key={t.id} onClick={() => onEditTx(t)} style={{ background:C.card, borderRadius:14, padding:"14px 16px", marginBottom:8, display:"flex", alignItems:"center", gap:12, borderLeft:"3px solid "+catColor, cursor:"pointer" }}>
             <div style={{ width:38, height:38, borderRadius:11, background:catColor+"22", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
@@ -123,7 +128,7 @@ export function Historico({ sorted, transactions, accounts, selectedMonth, searc
             </div>
             <div style={{ flex:1, minWidth:0 }}>
               <div style={{ fontWeight:600, fontSize:14, color:C.text, whiteSpace:"nowrap", overflow:"hidden", textOverflow:"ellipsis", display:"flex", alignItems:"center", gap:6 }}>
-                {t.description}
+                {displayDescription}
                 {t.recurring && <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke={C.blue} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>}
               </div>
               <div style={{ fontSize:11, color:C.sub, marginTop:2 }}>
