@@ -57,14 +57,31 @@ export function DatePicker({ value, onChange }: DatePickerProps) {
       {open && (
         <>
           <div onClick={() => setOpen(false)} style={{ position:"fixed", inset:0, zIndex:150 }} />
-          <div style={{ position:"absolute", bottom:"calc(100% + 8px)", left:0, right:0, background:C.surface, border:"1px solid "+C.border, borderRadius:16, padding:16, zIndex:151, boxShadow:"0 -8px 30px #00000066" }}>
+          <div
+            style={{
+              position:"absolute", bottom:"calc(100% + 8px)", left:0, right:0,
+              background:"rgba(30,35,50,0.65)",
+              backdropFilter:"blur(24px) saturate(180%)",
+              WebkitBackdropFilter:"blur(24px) saturate(180%)",
+              border:"1px solid rgba(255,255,255,0.12)",
+              borderRadius:20, padding:16, zIndex:151,
+              boxShadow:"0 -12px 40px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.08)",
+              animation:"datepickerIn 0.22s cubic-bezier(0.32,0.72,0,1) both",
+            }}
+          >
+            <style>{`
+              @keyframes datepickerIn {
+                from { opacity:0; transform:translateY(8px) scale(0.98); }
+                to   { opacity:1; transform:translateY(0) scale(1); }
+              }
+            `}</style>
             {/* Header: month nav */}
             <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:14 }}>
-              <button onClick={prevMonth} style={{ background:C.card, border:"1px solid "+C.border, color:C.sub, borderRadius:10, width:32, height:32, cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center" }}>
+              <button onClick={prevMonth} style={{ background:"rgba(255,255,255,0.06)", border:"1px solid rgba(255,255,255,0.1)", color:C.sub, borderRadius:10, width:32, height:32, cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center" }}>
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
               </button>
               <div style={{ fontSize:14, fontWeight:700, color:C.text }}>{MONTHS_PT[viewM]} {viewY}</div>
-              <button onClick={nextMonth} style={{ background:C.card, border:"1px solid "+C.border, color:C.sub, borderRadius:10, width:32, height:32, cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center" }}>
+              <button onClick={nextMonth} style={{ background:"rgba(255,255,255,0.06)", border:"1px solid rgba(255,255,255,0.1)", color:C.sub, borderRadius:10, width:32, height:32, cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center" }}>
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
               </button>
             </div>
@@ -94,6 +111,8 @@ export function DatePicker({ value, onChange }: DatePickerProps) {
                       fontSize:13, fontWeight: isSelected || isToday ? 700 : 500,
                       display:"flex", alignItems:"center", justifyContent:"center",
                       border: isToday && !isSelected ? "1px solid "+C.blue : "none",
+                      boxShadow: isSelected ? "0 2px 10px rgba(37,99,235,0.5)" : "none",
+                      transition:"transform 0.12s ease",
                     }}
                   >
                     {day}
@@ -105,7 +124,7 @@ export function DatePicker({ value, onChange }: DatePickerProps) {
             {/* Today shortcut */}
             <button
               onClick={() => { onChange(todayStr); setOpen(false); }}
-              style={{ width:"100%", marginTop:14, padding:"10px", borderRadius:10, border:"1px solid "+C.border, background:C.card, color:C.blue, cursor:"pointer", fontSize:13, fontWeight:600 }}
+              style={{ width:"100%", marginTop:14, padding:"10px", borderRadius:10, border:"1px solid rgba(255,255,255,0.1)", background:"rgba(255,255,255,0.06)", color:C.blue, cursor:"pointer", fontSize:13, fontWeight:600 }}
             >
               Hoje
             </button>
