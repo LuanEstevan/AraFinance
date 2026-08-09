@@ -6,6 +6,7 @@ import { Modal } from "./components/Modal";
 import { TabIcon } from "./components/TabIcon";
 import { CatIcon } from "./components/CatIcon";
 import { AraLogo } from "./components/AraLogo";
+import { DatePicker } from "./components/DatePicker";
 import { SideMenu } from "./components/SideMenu";
 import { Dashboard } from "./screens/Dashboard";
 import { Contas } from "./screens/Contas";
@@ -587,7 +588,7 @@ export default function App() {
             </select>
             <div>
               <div style={{ fontSize:12, color:C.sub, marginBottom:6 }}>Data</div>
-              <input type="date" style={iStyle} value={txModal.date} onChange={e => setTxModal((f: any) => ({ ...f, date:e.target.value }))} />
+              <DatePicker value={txModal.date} onChange={date => setTxModal((f: any) => ({ ...f, date }))} />
             </div>
             <button onClick={() => saveTx(true)} disabled={txSaving} style={{ ...btn("#f1f5f9"), opacity:txSaving?0.6:1 }}>{txSaving ? "Salvando..." : txModal.editId != null ? "Salvar alterações" : "Adicionar lançamento"}</button>
             {txModal.editId != null && txModal.recurringGroup && (
