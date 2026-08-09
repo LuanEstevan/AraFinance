@@ -114,11 +114,11 @@ export function SideMenu({ isOpen, onClose, user, onSignOut, onSignIn, onSignUp,
       {/* Backdrop */}
       <div
         onClick={onClose}
-        style={{ position:"fixed", inset:0, background:"#000000aa", zIndex:200, animation:"fadeIn 0.2s ease both" }}
+        style={{ position:"fixed", inset:0, background:"rgba(0,0,0,0.5)", backdropFilter:"blur(3px)", WebkitBackdropFilter:"blur(3px)", zIndex:200, animation:"fadeIn 0.2s ease both" }}
       />
 
       {/* Side panel */}
-      <div style={{ position:"fixed", top:0, right:0, bottom:0, width:"85%", maxWidth:340, background:C.surface, zIndex:201, display:"flex", flexDirection:"column", animation:"slideLeft 0.3s cubic-bezier(0.32,0.72,0,1) both", boxShadow:"-8px 0 40px #00000066" }}>
+      <div style={{ position:"fixed", top:0, right:0, bottom:0, width:"85%", maxWidth:340, background:"rgba(17,24,39,0.75)", backdropFilter:"blur(28px) saturate(180%)", WebkitBackdropFilter:"blur(28px) saturate(180%)", borderLeft:"1px solid rgba(255,255,255,0.1)", zIndex:201, display:"flex", flexDirection:"column", animation:"slideLeft 0.3s cubic-bezier(0.32,0.72,0,1) both", boxShadow:"-16px 0 50px rgba(0,0,0,0.5)" }}>
         <style>{`
           @keyframes fadeIn { from { opacity:0; } to { opacity:1; } }
           @keyframes slideLeft { from { transform:translateX(100%); } to { transform:translateX(0); } }
