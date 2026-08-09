@@ -456,7 +456,7 @@ export default function App() {
       </div>
 
       {/* Tab bar */}
-      <div style={{ position:"fixed", bottom:0, left:0, right:0, background:C.surface, borderTop:"1px solid "+C.border, display:"flex", zIndex:50, paddingBottom:8 }}>
+      <div style={{ position:"fixed", bottom:0, left:0, right:0, background:"rgba(17,24,39,0.75)", backdropFilter:"blur(24px) saturate(180%)", WebkitBackdropFilter:"blur(24px) saturate(180%)", borderTop:"1px solid rgba(255,255,255,0.08)", display:"flex", zIndex:50, paddingBottom:8 }}>
         {["dashboard","contas"].map(tb => (
           <button key={tb} onClick={() => setTab(tb)} style={{ flex:1, border:"none", background:"none", cursor:"pointer", padding:"10px 0 4px", display:"flex", flexDirection:"column", alignItems:"center", gap:3 }}>
             <TabIcon tab={tb} active={tab === tb} blue={C.blue} sub={C.sub} />
