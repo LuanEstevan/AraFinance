@@ -57,7 +57,7 @@ export function DatePicker({ value, onChange }: DatePickerProps) {
       {open && (
         <>
           <div onClick={() => setOpen(false)} style={{ position:"fixed", inset:0, zIndex:150 }} />
-          <div style={{ position:"absolute", top:"calc(100% + 8px)", left:0, right:0, background:C.surface, border:"1px solid "+C.border, borderRadius:16, padding:16, zIndex:151, boxShadow:"0 8px 30px #00000066" }}>
+          <div style={{ position:"absolute", bottom:"calc(100% + 8px)", left:0, right:0, background:C.surface, border:"1px solid "+C.border, borderRadius:16, padding:16, zIndex:151, boxShadow:"0 -8px 30px #00000066" }}>
             {/* Header: month nav */}
             <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:14 }}>
               <button onClick={prevMonth} style={{ background:C.card, border:"1px solid "+C.border, color:C.sub, borderRadius:10, width:32, height:32, cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center" }}>
