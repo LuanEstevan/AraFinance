@@ -721,7 +721,7 @@ export default function App() {
               </select>
             )}
             <input style={iStyle} placeholder="Valor da meta (ex: 500)" type="text" inputMode="decimal" value={goalModal.target} onChange={e => setGoalModal((f: any) => ({ ...f, target:e.target.value }))} />
-            <button onClick={() => saveGoal(goalModal)} style={btn("#f1f5f9")}>{goalModal.editId != null ? "Salvar alterações" : "Criar meta"}</button>
+            <button onClick={() => saveGoal(goalModal)} style={btn("linear-gradient(135deg,#2563EB,#7C3AED)")}>{goalModal.editId != null ? "Salvar alterações" : "Criar meta"}</button>
             {goalModal.editId != null && <button onClick={async () => { await deleteGoal(goalModal.editId); setGoalModal(null); }} style={btn("none", { border:"1px solid "+C.red+"44", color:C.red })}>Remover meta</button>}
           </div>
         </Modal>
