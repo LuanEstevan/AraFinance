@@ -16,7 +16,7 @@ interface MetasProps {
 export function Metas({ goals, filtered, selectedMonth, balance, totalExpense, onNew, onEdit }: MetasProps) {
   return (
     <div>
-      <button onClick={onNew} style={btn("#f1f5f9", { marginBottom:16 })}>Nova Meta</button>
+      <button onClick={onNew} style={btn("linear-gradient(135deg,#2563EB,#7C3AED)", { marginBottom:16 })}>Nova Meta</button>
 
       {goals.length === 0 && (
         <div style={{ textAlign:"center", padding:"60px 20px", color:C.sub, display:"flex", flexDirection:"column", alignItems:"center" }}>
