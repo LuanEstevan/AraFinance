@@ -76,7 +76,7 @@ export const catLabel = (n: string): string => {
   return map[n] || n;
 };
 
-// ── Compression ───────────────────────────────────────────────
+// ── Compression (unused, kept out of build path) ───────────────
 const KEY_MAP: Record<string, string> = {
   transactions:"T", accounts:"A", nextTxId:"ti", nextAccId:"ai", goals:"GL",
   nextGoalId:"gi", type:"tp", description:"ds", amount:"am", category:"ct",
