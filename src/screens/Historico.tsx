@@ -117,9 +117,8 @@ export function Historico({ sorted, transactions, accounts, selectedMonth, searc
         const catColor = cat?.color || "#94a3b8";
         const accColor = acc ? ACCOUNT_COLORS[acc.colorIdx % ACCOUNT_COLORS.length] : C.sub;
         let displayDescription = t.description;
-        if (t.installmentGroup && t.installmentIndex) {
-          const groupSize = groups[t.installmentGroup]?.length || t.installmentTotal || t.installmentIndex;
-          displayDescription = t.description.replace(/\s\d+\/\d+$/, "") + " " + t.installmentIndex + "/" + groupSize;
+        if (t.installmentGroup && t.installmentIndex && t.installmentTotal) {
+          displayDescription = t.description.replace(/\s\d+\/\d+$/, "") + " " + t.installmentIndex + "/" + t.installmentTotal;
         }
         return (
           <div key={t.id} onClick={() => onEditTx(t)} style={{ background:C.card, borderRadius:14, padding:"14px 16px", marginBottom:8, display:"flex", alignItems:"center", gap:12, borderLeft:"3px solid "+catColor, cursor:"pointer" }}>
