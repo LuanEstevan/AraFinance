@@ -838,6 +838,7 @@ export default function App() {
         onSignUp={signUp}
         currentLanguage={language}
         onLanguageChange={handleLanguageChange}
+        transactions={transactions}
       />
 
     </div>
