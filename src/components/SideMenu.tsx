@@ -14,6 +14,7 @@ interface SideMenuProps {
   onSignUp: (email: string, password: string) => Promise<string>;
   currentLanguage: Language;
   onLanguageChange: (lang: Language) => void;
+  transactions?: any[];
 }
 
 type MenuView = "main" | "sobre" | "perfil" | "faq" | "configuracoes" | "auth";
@@ -45,7 +46,7 @@ const FAQ_ITEMS = [
   },
 ];
 
-export function SideMenu({ isOpen, onClose, user, onSignOut, onSignIn, onSignUp, currentLanguage, onLanguageChange }: SideMenuProps) {
+export function SideMenu({ isOpen, onClose, user, onSignOut, onSignIn, onSignUp, currentLanguage, onLanguageChange, transactions }: SideMenuProps) {
   const [view, setView] = useState<MenuView>("main");
   const [authView, setAuthView] = useState<"login" | "register">("login");
   const [authEmail, setAuthEmail] = useState("");
@@ -317,6 +318,27 @@ export function SideMenu({ isOpen, onClose, user, onSignOut, onSignIn, onSignUp,
                       <span>{lang === "pt" ? "Português" : "English"}</span>
                     </button>
                   ))}
+                </div>
+              </div>
+
+              <div style={{ background:C.card, borderRadius:14, overflow:"hidden", marginTop:16 }}>
+                <div style={{ padding:"14px 16px", borderBottom:"1px solid "+C.border }}>
+                  <div style={{ fontSize:13, fontWeight:600, color:C.text, marginBottom:2 }}>Diagnóstico (temporário)</div>
+                  <div style={{ fontSize:12, color:C.sub }}>Dados brutos das parcelas — toque para selecionar e copiar</div>
+                </div>
+                <div style={{ padding:"14px 16px" }}>
+                  <textarea
+                    readOnly
+                    onFocus={e => e.target.select()}
+                    style={{ width:"100%", height:200, background:"rgba(0,0,0,0.3)", border:"1px solid "+C.border, borderRadius:10, padding:10, fontSize:11, color:C.text, fontFamily:"monospace", boxSizing:"border-box" }}
+                    value={
+                      (transactions || [])
+                        .filter(t => t.installmentGroup)
+                        .sort((a,b) => (a.installmentGroup - b.installmentGroup) || (a.installmentIndex - b.installmentIndex))
+                        .map(t => `${t.description} | idx:${t.installmentIndex} total:${t.installmentTotal} grp:${t.installmentGroup} date:${t.date}`)
+                        .join("\n") || "Nenhuma parcela encontrada"
+                    }
+                  />
                 </div>
               </div>
             </div>
