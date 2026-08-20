@@ -367,6 +367,7 @@ export function SideMenu({ isOpen, onClose, user, onSignOut, onSignIn, onSignUp,
                     </div>
                   </div>
                 )}
+              </div>
             </div>
           )}
           {/* AUTH */}
