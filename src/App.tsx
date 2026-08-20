@@ -370,6 +370,16 @@ export default function App() {
     localStorage.setItem("ara-language", lang);
   };
 
+  const clearAllData = async () => {
+    const empty = { transactions: [] as Transaction[], accounts: [] as Account[], goals: [] as Goal[], paidBills: {} as PaidBills };
+    setTransactions(empty.transactions);
+    setAccounts(empty.accounts);
+    setGoals(empty.goals);
+    setPaidBills(empty.paidBills);
+    setNextTxId(1); setNextAccId(1); setNextGoalId(1);
+    await saveData(empty.transactions, empty.accounts, 1, 1, empty.goals, 1, empty.paidBills);
+  };
+
   const recalcBankBalance = async () => {
     const today = new Date().toISOString().slice(0, 10);
     const newAccs = accounts.map(a => {
@@ -839,6 +849,7 @@ export default function App() {
         currentLanguage={language}
         onLanguageChange={handleLanguageChange}
         transactions={transactions}
+        onClearData={clearAllData}
       />
 
     </div>
