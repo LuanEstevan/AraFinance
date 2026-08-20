@@ -105,7 +105,7 @@ export function DatePicker({ value, onChange }: DatePickerProps) {
                     key={i}
                     onClick={() => selectDay(day)}
                     style={{
-                      aspectRatio:"1", borderRadius:10, border:"none", cursor:"pointer",
+                      aspectRatio:"1", borderRadius:10, cursor:"pointer",
                       background: isSelected ? "linear-gradient(135deg,#2563EB,#7C3AED)" : "transparent",
                       color: isSelected ? "#fff" : isToday ? C.blue : C.text,
                       fontSize:13, fontWeight: isSelected || isToday ? 700 : 500,
