@@ -15,6 +15,7 @@ interface SideMenuProps {
   currentLanguage: Language;
   onLanguageChange: (lang: Language) => void;
   transactions?: any[];
+  onClearData?: () => Promise<void>;
 }
 
 type MenuView = "main" | "sobre" | "perfil" | "faq" | "configuracoes" | "auth";
@@ -46,7 +47,9 @@ const FAQ_ITEMS = [
   },
 ];
 
-export function SideMenu({ isOpen, onClose, user, onSignOut, onSignIn, onSignUp, currentLanguage, onLanguageChange, transactions }: SideMenuProps) {
+export function SideMenu({ isOpen, onClose, user, onSignOut, onSignIn, onSignUp, currentLanguage, onLanguageChange, transactions, onClearData }: SideMenuProps) {
+  const [confirmClear, setConfirmClear] = useState(false);
+  const [clearing, setClearing] = useState(false);
   const [view, setView] = useState<MenuView>("main");
   const [authView, setAuthView] = useState<"login" | "register">("login");
   const [authEmail, setAuthEmail] = useState("");
@@ -321,26 +324,49 @@ export function SideMenu({ isOpen, onClose, user, onSignOut, onSignIn, onSignUp,
                 </div>
               </div>
 
-              <div style={{ background:C.card, borderRadius:14, overflow:"hidden", marginTop:16 }}>
-                <div style={{ padding:"14px 16px", borderBottom:"1px solid "+C.border }}>
-                  <div style={{ fontSize:13, fontWeight:600, color:C.text, marginBottom:2 }}>Diagnóstico (temporário)</div>
-                  <div style={{ fontSize:12, color:C.sub }}>Dados brutos das parcelas — toque para selecionar e copiar</div>
+              <div style={{ background:C.card, borderRadius:14, overflow:"hidden", marginTop:16, border:"1px solid "+C.red+"33" }}>
+                <div style={{ padding:"14px 16px", borderBottom:confirmClear?"1px solid "+C.border:"none" }}>
+                  <div style={{ fontSize:13, fontWeight:600, color:C.red, marginBottom:2 }}>Zona de risco</div>
+                  <div style={{ fontSize:12, color:C.sub }}>Apaga lançamentos, contas e metas. Sua conta continua logada.</div>
                 </div>
-                <div style={{ padding:"14px 16px" }}>
-                  <textarea
-                    readOnly
-                    onFocus={e => e.target.select()}
-                    style={{ width:"100%", height:200, background:"rgba(0,0,0,0.3)", border:"1px solid "+C.border, borderRadius:10, padding:10, fontSize:11, color:C.text, fontFamily:"monospace", boxSizing:"border-box" }}
-                    value={
-                      (transactions || [])
-                        .filter(t => t.installmentGroup)
-                        .sort((a,b) => (a.installmentGroup - b.installmentGroup) || (a.installmentIndex - b.installmentIndex))
-                        .map(t => `${t.description} | idx:${t.installmentIndex} total:${t.installmentTotal} grp:${t.installmentGroup} date:${t.date}`)
-                        .join("\n") || "Nenhuma parcela encontrada"
-                    }
-                  />
-                </div>
-              </div>
+                {!confirmClear ? (
+                  <div style={{ padding:"14px 16px" }}>
+                    <button
+                      onClick={() => setConfirmClear(true)}
+                      style={{ width:"100%", background:"#7f1d1d22", border:"1px solid "+C.red+"44", color:C.red, borderRadius:10, padding:"10px", cursor:"pointer", fontSize:13, fontWeight:600 }}
+                    >
+                      Limpar todos os dados
+                    </button>
+                  </div>
+                ) : (
+                  <div style={{ padding:"14px 16px" }}>
+                    <div style={{ fontSize:12, color:C.text, marginBottom:12, lineHeight:1.5 }}>
+                      Tem certeza? Todos os lançamentos, contas e metas serão apagados permanentemente. Essa ação não pode ser desfeita.
+                    </div>
+                    <div style={{ display:"flex", gap:8 }}>
+                      <button
+                        onClick={() => setConfirmClear(false)}
+                        disabled={clearing}
+                        style={{ flex:1, background:C.surface, border:"1px solid "+C.border, color:C.text, borderRadius:10, padding:"10px", cursor:"pointer", fontSize:13, fontWeight:600 }}
+                      >
+                        Cancelar
+                      </button>
+                      <button
+                        onClick={async () => {
+                          if (!onClearData) return;
+                          setClearing(true);
+                          await onClearData();
+                          setClearing(false);
+                          setConfirmClear(false);
+                        }}
+                        disabled={clearing}
+                        style={{ flex:1, background:C.red, border:"none", color:"#fff", borderRadius:10, padding:"10px", cursor:"pointer", fontSize:13, fontWeight:700, opacity:clearing?0.6:1 }}
+                      >
+                        {clearing ? "Apagando..." : "Sim, apagar tudo"}
+                      </button>
+                    </div>
+                  </div>
+                )}
             </div>
           )}
           {/* AUTH */}
