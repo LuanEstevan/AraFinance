@@ -6,6 +6,7 @@ import { Modal } from "./components/Modal";
 import { TabIcon } from "./components/TabIcon";
 import { CatIcon } from "./components/CatIcon";
 import { AraLogo } from "./components/AraLogo";
+import { ConfirmDialog } from "./components/ConfirmDialog";
 import { DatePicker } from "./components/DatePicker";
 import { SideMenu } from "./components/SideMenu";
 import { Dashboard } from "./screens/Dashboard";
@@ -48,6 +49,7 @@ export default function App() {
   const [advanceModal, setAdvanceModal] = useState<any>(null);
   const [goalModal, setGoalModal]       = useState<any>(null);
   const [showMenu, setShowMenu]         = useState<boolean>(false);
+  const [pendingDelete, setPendingDelete] = useState<{ type:"tx"|"account"|"goal"; id:number; label:string } | null>(null);
   const [language, setLanguage]         = useState<Language>(() => {
     return (localStorage.getItem("ara-language") as Language) || "pt";
   });
@@ -613,7 +615,7 @@ export default function App() {
                 await saveData(newTxs, accounts, nextTxId, nextAccId, goals, nextGoalId);
               }} style={btn("none", { border:"1px solid #f59e0b44", color:"#f59e0b" })}>Cancelar recorrência daqui em diante</button>
             )}
-            {txModal.editId != null && <button onClick={async () => { await deleteTx(txModal.editId); }} style={btn("none", { border:"1px solid "+C.red+"44", color:C.red })}>Remover lançamento</button>}
+            {txModal.editId != null && <button onClick={() => setPendingDelete({ type:"tx", id:txModal.editId, label:txModal.description })} style={btn("none", { border:"1px solid "+C.red+"44", color:C.red })}>Remover lançamento</button>}
           </div>
         </Modal>
       )}
@@ -670,7 +672,7 @@ export default function App() {
               </div>
             </div>
             <button onClick={saveAcc} style={btn("linear-gradient(135deg,#2563EB,#7C3AED)")}>{accModal.editId != null ? "Salvar alterações" : "Adicionar"}</button>
-            {accModal.editId != null && <button onClick={async () => { await deleteAccount(accModal.editId); }} style={btn("none", { border:"1px solid "+C.red+"44", color:C.red })}>Remover conta</button>}
+            {accModal.editId != null && <button onClick={() => setPendingDelete({ type:"account", id:accModal.editId, label:accModal.name })} style={btn("none", { border:"1px solid "+C.red+"44", color:C.red })}>Remover conta</button>}
           </div>
         </Modal>
       )}
@@ -737,7 +739,7 @@ export default function App() {
             )}
             <input style={iStyle} placeholder="Valor da meta (ex: 500)" type="text" inputMode="decimal" value={goalModal.target} onChange={e => setGoalModal((f: any) => ({ ...f, target:e.target.value }))} />
             <button onClick={() => saveGoal(goalModal)} style={btn("linear-gradient(135deg,#2563EB,#7C3AED)")}>{goalModal.editId != null ? "Salvar alterações" : "Criar meta"}</button>
-            {goalModal.editId != null && <button onClick={async () => { await deleteGoal(goalModal.editId); setGoalModal(null); }} style={btn("none", { border:"1px solid "+C.red+"44", color:C.red })}>Remover meta</button>}
+            {goalModal.editId != null && <button onClick={() => setPendingDelete({ type:"goal", id:goalModal.editId, label:goalModal.name })} style={btn("none", { border:"1px solid "+C.red+"44", color:C.red })}>Remover meta</button>}
           </div>
         </Modal>
       )}
@@ -851,6 +853,32 @@ export default function App() {
         transactions={transactions}
         onClearData={clearAllData}
       />
+
+      {/* Confirm Delete */}
+      {pendingDelete && (
+        <ConfirmDialog
+          title={
+            pendingDelete.type === "tx" ? "Remover lançamento?" :
+            pendingDelete.type === "account" ? "Remover conta?" :
+            "Remover meta?"
+          }
+          message={
+            (pendingDelete.type === "tx" ? `"${pendingDelete.label}" será removido permanentemente.` :
+             pendingDelete.type === "account" ? `A conta "${pendingDelete.label}" e seu histórico vinculado deixarão de aparecer no app.` :
+             `A meta "${pendingDelete.label}" será removida permanentemente.`) +
+            " Essa ação não pode ser desfeita."
+          }
+          confirmLabel="Remover"
+          onCancel={() => setPendingDelete(null)}
+          onConfirm={async () => {
+            const { type, id } = pendingDelete;
+            setPendingDelete(null);
+            if (type === "tx") { await deleteTx(id); }
+            else if (type === "account") { await deleteAccount(id); }
+            else if (type === "goal") { await deleteGoal(id); setGoalModal(null); }
+          }}
+        />
+      )}
 
     </div>
   );
