@@ -645,10 +645,22 @@ export default function App() {
                 <input style={iStyle} placeholder="Ex: 1.500,00" type="text" inputMode="decimal" value={accModal.balance} onChange={e => setAccModal((f: any) => ({ ...f, balance:e.target.value }))} />
               </div>
             )}
+            {accModal.kind === "bank" && (
+              <div>
+                <div style={{ fontSize:12, color:C.sub, marginBottom:6 }}>Agência <span style={{ color:C.muted }}>(opcional)</span></div>
+                <input style={iStyle} placeholder="Ex: 0001" type="text" inputMode="numeric" maxLength={6} value={accModal.agency || ""} onChange={e => setAccModal((f: any) => ({ ...f, agency:e.target.value.replace(/\D/g,"") }))} />
+              </div>
+            )}
             {accModal.kind === "card" && (
               <div>
                 <div style={{ fontSize:12, color:C.sub, marginBottom:6 }}>Limite total <span style={{ color:C.muted }}>(opcional)</span></div>
                 <input style={iStyle} placeholder="Ex: 5.000,00" type="text" inputMode="decimal" value={accModal.limit} onChange={e => setAccModal((f: any) => ({ ...f, limit:e.target.value }))} />
+              </div>
+            )}
+            {accModal.kind === "card" && (
+              <div>
+                <div style={{ fontSize:12, color:C.sub, marginBottom:6 }}>Últimos 4 dígitos <span style={{ color:C.muted }}>(opcional)</span></div>
+                <input style={iStyle} placeholder="Ex: 4521" type="text" inputMode="numeric" maxLength={4} value={accModal.lastDigits || ""} onChange={e => setAccModal((f: any) => ({ ...f, lastDigits:e.target.value.replace(/\D/g,"") }))} />
               </div>
             )}
             {accModal.kind === "card" && (
