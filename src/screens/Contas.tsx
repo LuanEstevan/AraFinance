@@ -50,7 +50,7 @@ export function Contas({ accounts, transactions, selectedMonth, paidBills, spend
                   <div style={{ display:"flex", alignItems:"center", gap:12 }}>
                     <div style={{ width:40, height:40, borderRadius:12, background:ac+"33", display:"flex", alignItems:"center", justifyContent:"center" }}><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={ac} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="3" y1="22" x2="21" y2="22"/><line x1="6" y1="18" x2="6" y2="11"/><line x1="10" y1="18" x2="10" y2="11"/><line x1="14" y1="18" x2="14" y2="11"/><line x1="18" y1="18" x2="18" y2="11"/><polygon points="12 2 20 7 4 7"/></svg></div>
                     <div>
-                      <div style={{ fontWeight:700, fontSize:15, color:C.text }}>{a.name}{a.agency && <span style={{ fontWeight:500, fontSize:12, color:C.sub }}> Ag. {a.agency}</span>}</div>
+                      <div style={{ fontWeight:700, fontSize:15, color:C.text }}>{a.name}</div>
                       <div style={{ fontSize:11, color:C.sub, marginTop:2 }}>Gasto este mês: <span style={{ color:C.red }}>{fmt(spendByAccount[a.id] || 0)}</span></div>
                     </div>
                   </div>
