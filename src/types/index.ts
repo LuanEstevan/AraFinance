@@ -32,6 +32,8 @@ export interface Account {
   colorIdx: number;
   closingDay?: string;
   dueDay?: string;
+  agency?: string;
+  lastDigits?: string;
 }
 
 export interface Goal {
