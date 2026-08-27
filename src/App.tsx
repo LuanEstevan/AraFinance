@@ -319,7 +319,7 @@ export default function App() {
   };
 
   const openAdvance = useCallback((group: Transaction[]) => {
-    const future = group.filter(t => t.date.slice(0,7) > selectedMonth).sort((a,b) => a.date.localeCompare(b.date));
+    const future = group.filter(t => getBillingYM(t.date, t.accountId, accounts) > selectedMonth).sort((a,b) => a.date.localeCompare(b.date));
     const values: Record<number, { checked:boolean; amount:string }> = {};
     future.forEach(t => { values[t.id] = { checked:false, amount:fmt(t.amount) }; });
     setAdvanceModal({ group, future, values });
@@ -763,7 +763,7 @@ export default function App() {
         const monthTxs = transactions.filter(t => String(t.accountId) === String(accDetail.id) && getBillingYM(t.date, t.accountId, accounts) === selectedMonth).sort((a, b) => b.date.localeCompare(a.date));
         const monthSpend  = monthTxs.filter(t => t.type === "expense").reduce((s, t) => s + t.amount, 0);
         const monthIncome = monthTxs.filter(t => t.type === "income").reduce((s, t) => s + t.amount, 0);
-        const futureBill  = transactions.filter(t => String(t.accountId) === String(accDetail.id) && t.type === "expense" && t.date.slice(0,7) > selectedMonth && t.installmentGroup && !t.recurringGroup).reduce((s, t) => s + t.amount, 0);
+        const futureBill  = transactions.filter(t => String(t.accountId) === String(accDetail.id) && t.type === "expense" && getBillingYM(t.date, t.accountId, accounts) > selectedMonth && t.installmentGroup && !t.recurringGroup).reduce((s, t) => s + t.amount, 0);
         const limit = parseBR(accDetail.limit);
         const available = limit - monthSpend - futureBill;
         return (
