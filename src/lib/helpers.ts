@@ -76,59 +76,6 @@ export const catLabel = (n: string): string => {
   return map[n] || n;
 };
 
-// ── Compression (unused, kept out of build path) ───────────────
-const KEY_MAP: Record<string, string> = {
-  transactions:"T", accounts:"A", nextTxId:"ti", nextAccId:"ai", goals:"GL",
-  nextGoalId:"gi", type:"tp", description:"ds", amount:"am", category:"ct",
-  date:"dt", accountId:"ac", installments:"in", installmentGroup:"ig",
-  advancedFrom:"af", id:"id", kind:"kd", limit:"lm", balance:"bl",
-  colorIdx:"ci", name:"nm",
-};
-const KEY_UNMAP: Record<string, string> = Object.fromEntries(
-  Object.entries(KEY_MAP).map(([k, v]) => [v, k])
-);
-const SKIP_KEYS = new Set(["editId","lastSaved","installmentIndex","installmentTotal"]);
-
-const shorten = (o: any): any => {
-  if (Array.isArray(o)) return o.map(shorten);
-  if (o && typeof o === "object") {
-    const r: any = {};
-    for (const [k, v] of Object.entries(o)) {
-      if (SKIP_KEYS.has(k)) continue;
-      if (v === null || v === undefined || v === "" || v === false) continue;
-      if (k === "installments" && (v === 1 || v === "1")) continue;
-      r[KEY_MAP[k] || k] = shorten(v);
-    }
-    return r;
-  }
-  return o;
-};
-
-const expand = (o: any): any => {
-  if (Array.isArray(o)) return o.map(expand);
-  if (o && typeof o === "object") {
-    const r: any = {};
-    for (const [k, v] of Object.entries(o)) {
-      r[KEY_UNMAP[k] || k] = expand(v);
-    }
-    if (r.installments === undefined) r.installments = 1;
-    if (r.accountId === undefined) r.accountId = "";
-    return r;
-  }
-  return o;
-};
-
-export const compress = (data: any): string =>
-  btoa(unescape(encodeURIComponent(JSON.stringify(shorten(data)))));
-
-export const decompress = (str: string): any => {
-  try {
-    return expand(JSON.parse(decodeURIComponent(escape(atob(str)))));
-  } catch {
-    return JSON.parse(str);
-  }
-};
-
 // ── Brand default color index ─────────────────────────────────
 import { BRAND_COLOR_IDX } from "./constants";
 
