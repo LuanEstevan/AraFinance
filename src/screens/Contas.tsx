@@ -1,5 +1,5 @@
 import { C, ACCOUNT_COLORS } from "../lib/constants";
-import { fmt, parseBR, monthLabel } from "../lib/helpers";
+import { fmt, parseBR, monthLabel, getBillingYM } from "../lib/helpers";
 import { btn } from "../lib/helpers";
 import type { Transaction, Account, PaidBills } from "../types";
 
@@ -72,7 +72,7 @@ export function Contas({ accounts, transactions, selectedMonth, paidBills, spend
           {cards.map(a => {
             const spent   = spendByAccount[a.id] || 0;
             const limit   = parseBR(a.limit);
-            const futureBill = transactions.filter(t => String(t.accountId) === String(a.id) && t.type === "expense" && t.date.slice(0, 7) > selectedMonth && t.installmentGroup && !t.recurringGroup).reduce((s, t) => s + t.amount, 0);
+            const futureBill = transactions.filter(t => String(t.accountId) === String(a.id) && t.type === "expense" && getBillingYM(t.date, t.accountId, accounts) > selectedMonth && t.installmentGroup && !t.recurringGroup).reduce((s, t) => s + t.amount, 0);
             const committed  = spent + futureBill;
             const available  = limit - committed;
             const pct        = limit > 0 ? Math.min((committed / limit) * 100, 100) : 0;

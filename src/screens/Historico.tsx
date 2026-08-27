@@ -1,5 +1,5 @@
 import { C, ALL_CATS, ACCOUNT_COLORS } from "../lib/constants";
-import { fmt, monthLabel , catLabel } from "../lib/helpers";
+import { fmt, monthLabel, catLabel, getBillingYM } from "../lib/helpers";
 import { CatIcon } from "../components/CatIcon";
 import type { Transaction, Account } from "../types";
 
@@ -32,7 +32,7 @@ export function Historico({ sorted, transactions, accounts, selectedMonth, searc
     groups[g].push(t);
   });
   const activeGroups = Object.values(groups).filter(g =>
-    g.some(t => t.date.slice(0, 7) === selectedMonth)
+    g.some(t => getBillingYM(t.date, t.accountId, accounts) === selectedMonth)
   );
 
   return (
@@ -67,8 +67,8 @@ export function Historico({ sorted, transactions, accounts, selectedMonth, searc
             const first = group[0];
             const baseName = first.description.replace(/ \d+\/\d+$/, "").replace(" (adiantado)", "");
             const total = group.length;
-            const paid  = group.filter(t => t.date.slice(0, 7) <= selectedMonth).length;
-            const cur   = group.find(t => t.date.slice(0, 7) === selectedMonth);
+            const paid  = group.filter(t => getBillingYM(t.date, t.accountId, accounts) <= selectedMonth).length;
+            const cur   = group.find(t => getBillingYM(t.date, t.accountId, accounts) === selectedMonth);
             const totalVal = group.reduce((s, t) => s + t.amount, 0);
             return (
               <div key={first.installmentGroup} style={{ background:C.card, borderRadius:14, padding:16, marginBottom:10 }}>
@@ -82,7 +82,7 @@ export function Historico({ sorted, transactions, accounts, selectedMonth, searc
                 <div style={{ background:C.muted, borderRadius:6, height:4 }}>
                   <div style={{ background:C.purple, borderRadius:6, height:4, width:(paid / total * 100) + "%" }} />
                 </div>
-                {group.some(t => t.date.slice(0, 7) > selectedMonth) && (
+                {group.some(t => getBillingYM(t.date, t.accountId, accounts) > selectedMonth) && (
                   <button onClick={() => onAdvance(group)} style={{ marginTop:12, width:"100%", background:"none", border:"1px solid "+C.purple+"55", color:C.purple, borderRadius:10, padding:"8px", fontSize:13, fontWeight:600, cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", gap:6 }}>
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="13 17 18 12 13 7"/><polyline points="6 17 11 12 6 7"/></svg>
                     Adiantar parcelas
