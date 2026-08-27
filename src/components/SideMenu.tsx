@@ -23,7 +23,7 @@ type MenuView = "main" | "sobre" | "perfil" | "faq" | "configuracoes" | "auth";
 const FAQ_ITEMS = [
   {
     q: "Como adicionar um lançamento?",
-    a: "Vá na aba Lançamentos e toque em 'Novo Lançamento'. Preencha a descrição, valor, categoria e data.",
+    a: "Toque no botão + no centro da barra inferior. Preencha a descrição, valor, categoria e data.",
   },
   {
     q: "Como funciona o gasto recorrente?",
@@ -175,7 +175,7 @@ export function SideMenu({ isOpen, onClose, user, onSignOut, onSignIn, onSignUp,
                 )}
               </div>
 
-              {menuItem(
+              {user && menuItem(
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={C.blue} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>,
                 "Perfil",
                 () => { setView("perfil"); loadProfile(); }
@@ -196,9 +196,9 @@ export function SideMenu({ isOpen, onClose, user, onSignOut, onSignIn, onSignUp,
                 () => setView("sobre")
               )}
 
-              <div style={{ height:1, background:C.border, margin:"12px 4px" }} />
+              {user && <div style={{ height:1, background:C.border, margin:"12px 4px" }} />}
 
-              {menuItem(
+              {user && menuItem(
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={C.red} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>,
                 "Sair",
                 () => { onClose(); onSignOut(); },
