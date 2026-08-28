@@ -99,7 +99,7 @@ export function Historico({ sorted, transactions, accounts, selectedMonth, searc
         <div style={{ textAlign:"center", padding:"60px 20px", color:C.sub, display:"flex", flexDirection:"column", alignItems:"center" }}>
           <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke={C.muted} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ marginBottom:12 }}><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="16" y2="17"/></svg>
           <div style={{ fontSize:16, fontWeight:600, color:C.text, marginBottom:8 }}>Nenhum lançamento</div>
-          <div>Ainda não há movimentações neste mês.</div>
+          <div style={{ fontSize:13 }}>Ainda não há movimentações neste mês.</div>
         </div>
       )}
       {displayList.length === 0 && searchQuery && (
