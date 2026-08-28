@@ -563,7 +563,7 @@ export default function App() {
           </div>
           <div style={{ display:"flex", flexDirection:"column", gap:12 }}>
             <input style={iStyle} placeholder="Descrição" value={txModal.description} onChange={e => setTxModal((f: any) => ({ ...f, description:e.target.value }))} />
-            <input style={iStyle} placeholder={txModal.type === "expense" ? "Valor (valor total para parcelas)" : "Valor total"} type="text" inputMode="decimal" value={txModal.amount} onChange={e => setTxModal((f: any) => ({ ...f, amount:e.target.value }))} />
+            <input style={iStyle} placeholder={txModal.type === "expense" ? "Valor (ex: 150,00)" : "Valor total (ex: 1.500,00)"} type="text" inputMode="decimal" value={txModal.amount} onChange={e => setTxModal((f: any) => ({ ...f, amount:e.target.value }))} />
 
             {txModal.type === "expense" && txModal.editId == null && (
               <div style={{ background:C.card, borderRadius:12, padding:14 }}>
