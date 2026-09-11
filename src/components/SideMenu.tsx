@@ -57,6 +57,7 @@ export function SideMenu({ isOpen, onClose, user, onSignOut, onSignIn, onSignUp,
   const [authError, setAuthError] = useState("");
   const [authWorking, setAuthWorking] = useState(false);
   const passwordValid = authPassword.length >= 8 && /[A-Z]/.test(authPassword) && /[a-z]/.test(authPassword) && /[0-9]/.test(authPassword) && /[^A-Za-z0-9]/.test(authPassword);
+  const [failedAttempts, setFailedAttempts] = useState(0);
   const [name, setName]           = useState("");
   const [avatarUrl, setAvatarUrl] = useState("");
   const [profileLoaded, setProfileLoaded] = useState(false);
@@ -66,6 +67,18 @@ export function SideMenu({ isOpen, onClose, user, onSignOut, onSignIn, onSignUp,
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Load profile when opening
+  const handleAuth = async () => {
+    setAuthWorking(true);
+    const err = authView === "login" ? await onSignIn(authEmail, authPassword) : await onSignUp(authEmail, authPassword);
+    setAuthError(err);
+    setAuthWorking(false);
+    if (authView === "login") {
+      if (err) setFailedAttempts(f => f + 1);
+      else setFailedAttempts(0);
+    }
+    if (!err || err.includes("Verifique")) { setView("main"); if (!err) onClose(); }
+  };
+
   const loadProfile = async () => {
     if (profileLoaded) return;
     const { data } = await supabase.from("profiles").select("name, avatar_url").eq("id", user.id).single();
@@ -381,7 +394,7 @@ export function SideMenu({ isOpen, onClose, user, onSignOut, onSignIn, onSignUp,
               </div>
               <div style={{ display:"flex", flexDirection:"column", gap:12 }}>
                 <input style={iStyle} placeholder="Email" type="email" inputMode="email" value={authEmail} onChange={e => setAuthEmail(e.target.value)} />
-                <input style={iStyle} placeholder="Senha" type="password" value={authPassword} onChange={e => setAuthPassword(e.target.value)} onKeyDown={async e => { if (e.key === "Enter" && (authView === "login" || passwordValid)) { setAuthWorking(true); const err = authView === "login" ? await onSignIn(authEmail, authPassword) : await onSignUp(authEmail, authPassword); setAuthError(err); setAuthWorking(false); if (!err) { setView("main"); onClose(); } } }} />
+                <input style={iStyle} placeholder="Senha" type="password" value={authPassword} onChange={e => setAuthPassword(e.target.value)} onKeyDown={e => { if (e.key === "Enter" && (authView === "login" || passwordValid)) handleAuth(); }} />
 
                 {authView === "register" && (
                   <div style={{ background:C.card, borderRadius:12, padding:"12px 14px", display:"flex", flexDirection:"column", gap:6 }}>
@@ -402,19 +415,19 @@ export function SideMenu({ isOpen, onClose, user, onSignOut, onSignIn, onSignUp,
                   </div>
                 )}
 
+                {authView === "login" && failedAttempts >= 3 && (
+                  <div style={{ fontSize:12, color:"#f59e0b", background:"#f59e0b1a", borderRadius:10, padding:"10px 14px", borderLeft:"3px solid #f59e0b" }}>
+                    Muitas tentativas incorretas. Verifique sua senha com calma.
+                  </div>
+                )}
+
                 {authError && (
                   <div style={{ fontSize:13, color:authError.includes("Verifique")?C.green:C.red, background:authError.includes("Verifique")?"#14532d33":"#7f1d1d33", borderRadius:10, padding:"10px 14px", borderLeft:"3px solid "+(authError.includes("Verifique")?C.green:C.red) }}>
                     {authError}
                   </div>
                 )}
                 <button
-                  onClick={async () => {
-                    setAuthWorking(true);
-                    const err = authView === "login" ? await onSignIn(authEmail, authPassword) : await onSignUp(authEmail, authPassword);
-                    setAuthError(err);
-                    setAuthWorking(false);
-                    if (!err || err.includes("Verifique")) { setView("main"); if (!err) onClose(); }
-                  }}
+                  onClick={handleAuth}
                   disabled={authWorking || (authView === "register" && !passwordValid)}
                   style={{ ...btn("linear-gradient(135deg,#7C3AED,#2563EB)"), opacity:(authWorking || (authView === "register" && !passwordValid))?0.5:1 }}
                 >
