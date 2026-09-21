@@ -321,7 +321,7 @@ export default function App() {
   const openAdvance = useCallback((group: Transaction[]) => {
     const future = group.filter(t => getBillingYM(t.date, t.accountId, accounts) > selectedMonth).sort((a,b) => a.date.localeCompare(b.date));
     const values: Record<number, { checked:boolean; amount:string }> = {};
-    future.forEach(t => { values[t.id] = { checked:false, amount:fmt(t.amount) }; });
+    future.forEach(t => { values[t.id] = { checked:false, amount:t.amount.toFixed(2).replace(".", ",") }; });
     setAdvanceModal({ group, future, values });
   }, [selectedMonth]);
 
