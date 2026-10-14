@@ -77,3 +77,30 @@ export interface AppState {
   nextAccId: number;
   nextGoalId: number;
 }
+
+export interface DraftTransaction {
+  editId?: number | null;
+  type: "income" | "expense";
+  description: string;
+  amount: string; // No formulário, o valor digitado é sempre string
+  category: string;
+  accountId: string; 
+  date: string;
+  installments: string; 
+  installmentGroup?: number;
+  recurring: boolean;
+  recurringGroup?: number;
+}
+
+export interface DraftAccount {
+  editId?: number | null;
+  kind: "bank" | "card";
+  name: string;
+  balance: string; // Valor monetário digitado antes de formatar
+  limit: string;
+  colorIdx: number;
+  agency?: string;
+  lastDigits?: string;
+  closingDay?: string;
+  dueDay?: string;
+}
