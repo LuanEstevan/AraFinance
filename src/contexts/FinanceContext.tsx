@@ -128,7 +128,7 @@ export function FinanceProvider({ children }: { children: ReactNode }) {
       } else {
         newTxs = transactions.map(t => t.id === f.editId ? { ...f, id: f.editId as number, amount: totalAmt } as Transaction : t);
       }
-    } else if (installments > 1) {
+    } else if (installments: Number(tx.installments) > {
       const parcelAmt = totalAmt / installments;
       const [y, m, d] = f.date.split("-").map(Number);
       const generated: Transaction[] = Array.from({ length: installments }, (_, i) => {
