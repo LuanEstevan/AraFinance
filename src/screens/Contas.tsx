@@ -19,8 +19,8 @@ export function Contas({ selectedMonth, onNewAcc, onAccDetail }: ContasProps) {
 
   // 2. Calcula saldos e faturas atuais em um único loop (O(n) em vez de O(n^2))
   const { spendByAccount, totalBankBalance } = useMemo(() => {
+    const spendMap: Record<string | number, number> = {};
     let tBalance = 0;
-    const spendMap: Record<number, number> = {};
 
     // Inicia saldos dos bancos
     banks.forEach(b => { tBalance += parseBR(b.balance); });
@@ -39,7 +39,7 @@ export function Contas({ selectedMonth, onNewAcc, onAccDetail }: ContasProps) {
   // 3. Pré-calcula as faturas futuras de cartões para a barra de limite
   // Isso tira o array.filter().reduce() do meio do JSX.
   const futureCardBills = useMemo(() => {
-    const futureMap: Record<number, number> = {};
+    const futureMap: Record<string | number, number> = {};
     transactions.forEach(tx => {
       if (tx.type !== "expense") return;
       const txYm = getBillingYM(tx.date, tx.accountId, accounts);
