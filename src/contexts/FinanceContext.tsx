@@ -2,7 +2,7 @@ import { createContext, useContext, useState, useEffect, ReactNode, useCallback 
 import { supabase } from "../lib/supabase";
 import { useAuth } from "./AuthContext";
 import type { Transaction, Account, Goal, PaidBills, DraftTransaction, DraftAccount } from "../types";
-import { parseBR, getBillingYM } from "../lib/helpers";
+import { parseBR } from "../lib/helpers";
 
 interface FinanceContextData {
   transactions: Transaction[];
@@ -215,7 +215,7 @@ export function FinanceProvider({ children }: { children: ReactNode }) {
     await persistData(transactions, newAccs, nextTxId, nextAccId, goals, nextGoalId, paidBills);
   };
 
-  const saveAdvance = async (future: Transaction[], values: Record<number, { checked: boolean; amount: string }>, advDate: string) => {
+  const saveAdvance = async (values: Record<number, { checked: boolean; amount: string }>, advDate: string) => {
     const newTxs = transactions.map(t => {
       const v = values[t.id];
       if (v?.checked) return { ...t, date: advDate, amount: parseBR(v.amount), advancedFrom: t.date, description: t.description + " (adiantado)" };
