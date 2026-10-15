@@ -47,7 +47,7 @@ const FAQ_ITEMS = [
   },
 ];
 
-export function SideMenu({ isOpen, onClose, user, onSignOut, onSignIn, onSignUp, currentLanguage, onLanguageChange, transactions, onClearData }: SideMenuProps) {
+export function SideMenu({ isOpen, onClose, user, onSignOut, onSignIn, onSignUp, currentLanguage, onLanguageChange, onClearData }: SideMenuProps) {
   const [confirmClear, setConfirmClear] = useState(false);
   const [clearing, setClearing] = useState(false);
   const [view, setView] = useState<MenuView>("main");
