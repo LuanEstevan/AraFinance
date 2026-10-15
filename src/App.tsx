@@ -1,9 +1,8 @@
 import { useState, useMemo, useEffect, useCallback } from "react";
-import { C, EXPENSE_CATS, INCOME_CATS, ALL_CATS, ACCOUNT_COLORS } from "./lib/constants";
-import { fmt, parseBR, monthLabel, fmtDate, getBrand, getBillingYM, iStyle, btn, catLabel } from "./lib/helpers";
+import { C, EXPENSE_CATS, INCOME_CATS, ALL_CATS } from "./lib/constants";
+import { fmt, parseBR, monthLabel, getBillingYM, iStyle, btn, catLabel } from "./lib/helpers";
 import { Modal } from "./components/Modal";
 import { TabIcon } from "./components/TabIcon";
-import { CatIcon } from "./components/CatIcon";
 import { AraLogo } from "./components/AraLogo";
 import { ConfirmDialog } from "./components/ConfirmDialog";
 import { DatePicker } from "./components/DatePicker";
@@ -12,7 +11,7 @@ import { Dashboard } from "./screens/Dashboard";
 import { Contas } from "./screens/Contas";
 import { Historico } from "./screens/Historico";
 import { Metas } from "./screens/Metas";
-import type { Transaction, Account, Goal, DraftTransaction, DraftAccount } from "./types";
+import type { Transaction, Account, DraftTransaction, DraftAccount } from "./types";
 import { translations, type Language } from "./lib/i18n";
 
 // Importando os novos contextos
@@ -46,9 +45,6 @@ export default function App() {
   // Modal States (agora tipados e separados do fluxo principal de dados)
   const [txModal, setTxModal] = useState<{ isOpen: boolean; data: DraftTransaction | null }>({ isOpen: false, data: null });
   const [accModal, setAccModal] = useState<{ isOpen: boolean; data: DraftAccount | null }>({ isOpen: false, data: null });
-  const [accDetail, setAccDetail] = useState<Account | null>(null);
-  const [advanceModal, setAdvanceModal] = useState<any>(null); // Pode ser tipado melhor no futuro
-  const [goalModal, setGoalModal] = useState<{ isOpen: boolean; data: any | null }>({ isOpen: false, data: null });
 
   // Viewport fix
   useEffect(() => {
@@ -253,9 +249,10 @@ export default function App() {
       {/* Conteúdo das Abas */}
       <div key={tab} className="tab-content" style={{ padding: "16px 16px 0" }}>
         {tab === "dashboard" && <Dashboard filtered={filtered} transactions={transactions} selectedMonth={selectedMonth} totalIncome={totalIncome} totalExpense={totalExpense} balance={balance} byCategory={byCategory} byDate={byDate} />}
-        {tab === "contas" && <Contas accounts={accounts} transactions={transactions} selectedMonth={selectedMonth} paidBills={paidBills} spendByAccount={spendByAccount} totalBankBalance={totalBankBalance} onNewAcc={openNewAcc} onAccDetail={setAccDetail} onTogglePaid={togglePaidBill} />}
-        {tab === "historico" && <Historico sorted={sorted} transactions={transactions} accounts={accounts} selectedMonth={selectedMonth} searchQuery={searchQuery} onSearchChange={setSearchQuery} onEditTx={openEditTx} onAdvance={openAdvance} />}
-        {tab === "metas" && <Metas goals={goals} filtered={filtered} selectedMonth={selectedMonth} balance={balance} totalExpense={totalExpense} onNew={() => setGoalModal({ isOpen: true, data: { name: "", target: "", type: "economia", editId: null } })} onEdit={g => setGoalModal({ isOpen: true, data: { ...g, target: String(g.target), editId: g.id } })} />}
+        {tab === "contas" && <Contas selectedMonth={selectedMonth} onNewAcc={() => setAccModalOpen(true)} onAccDetail={a => setAccDetail(a)} />}        
+        {tab === "historico" && <Historico sorted={filtered} selectedMonth={selectedMonth} searchQuery={searchQuery} onSearchChange={setSearchQuery} onEditTx={t => { setTxToEdit(t); setTxModalOpen(true); }} onAdvance={g => setAdvanceModal(g)} />}
+        {tab === "metas" && <Metas selectedMonth={selectedMonth} onNew={() => setGoalModal(null)} onEdit={g => setGoalModal(g)} />}
+
       </div>
 
       {/* MODAL: Transação */}
