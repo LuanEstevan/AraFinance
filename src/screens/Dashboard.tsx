@@ -1,58 +1,29 @@
 import { useMemo } from "react";
 import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
-import { C, MONTHS, ALL_CATS } from "../lib/constants";
-import { fmt, catLabel, getBillingYM } from "../lib/helpers";
-import { useFinance } from "../contexts/FinanceContext";
+import { C, MONTHS } from "../lib/constants";
+import { fmt, catLabel } from "../lib/helpers";
+import type { Transaction } from "../types";
 
 interface DashboardProps {
+  filtered: Transaction[];
+  transactions: Transaction[];
   selectedMonth: string;
+  totalIncome: number;
+  totalExpense: number;
+  balance: number;
+  byCategory: { name: string; value: number; color: string; icon: string }[];
+  byDate: { day: string; receita: number; gasto: number }[];
 }
 
-export function Dashboard({ selectedMonth }: DashboardProps) {
-  // Puxando dados globais do contexto (adeus prop drilling!)
-  const { transactions, accounts } = useFinance();
+export function Dashboard({
+  transactions, selectedMonth, byCategory, byDate,
+}: DashboardProps) {
 
-  // ── Lógica Centralizada e Memorizada (Foco em Performance) ──
-  
-  // Filtra as transações do mês atual considerando a regra de fatura de cartão
-  const filtered = useMemo(() => {
-    return transactions.filter(tx => {
-      if (!tx.date) return false;
-      return getBillingYM(tx.date, tx.accountId, accounts) === selectedMonth;
-    });
-  }, [transactions, accounts, selectedMonth]);
-
-  const totalIncome = useMemo(() => filtered.filter(tx => tx.type === "income").reduce((s, tx) => s + tx.amount, 0), [filtered]);
-  const totalExpense = useMemo(() => filtered.filter(tx => tx.type === "expense").reduce((s, tx) => s + tx.amount, 0), [filtered]);
-
-  const byCategory = useMemo(() => {
-    const map: Record<string, number> = {};
-    filtered.filter(tx => tx.type === "expense").forEach(tx => {
-      if (!map[tx.category]) map[tx.category] = 0;
-      map[tx.category] += tx.amount;
-    });
-    return Object.entries(map).map(([name, value]) => {
-      const cat = ALL_CATS.find(c => c.name === name);
-      return { name, value, color: cat?.color || "#94a3b8", icon: cat?.icon || "other" };
-    }).sort((a, b) => b.value - a.value);
-  }, [filtered]);
-
-  const byDate = useMemo(() => {
-    const map: Record<string, { day: string; receita: number; gasto: number }> = {};
-    filtered.forEach(tx => {
-      const d = tx.date.slice(8, 10) + "/" + tx.date.slice(5, 7);
-      if (!map[d]) map[d] = { day: d, receita: 0, gasto: 0 };
-      if (tx.type === "income") map[d].receita += tx.amount;
-      else map[d].gasto += tx.amount;
-    });
-    return Object.values(map).sort((a, b) => a.day.localeCompare(b.day));
-  }, [filtered]);
-
-  // A grande correção: Memorizar o recálculo dos 6 meses
+  // A GRANDE CORREÇÃO: Memorizar o recálculo pesado dos 6 meses.
+  // Agora isso não vai travar seu app a cada re-renderização de outras abas.
   const data6 = useMemo(() => {
     const [y, m] = selectedMonth.split("-").map(Number);
     
-    // Gera os rótulos de YYYY-MM para os últimos 6 meses
     const months6 = Array.from({ length: 6 }, (_, i) => {
       const d = new Date(y, m - 1 - (5 - i), 1);
       return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0");
@@ -73,7 +44,6 @@ export function Dashboard({ selectedMonth }: DashboardProps) {
     });
   }, [transactions, selectedMonth]);
 
-  // ── Estilos de UI ──
   const tooltipStyle = {
     contentStyle: { background: C.surface, border: "none", borderRadius: 12, color: C.text, fontSize: 13, padding: "8px 14px", boxShadow: "0 4px 20px #00000066" },
     itemStyle: { color: C.text, fontWeight: 700 },
@@ -82,7 +52,6 @@ export function Dashboard({ selectedMonth }: DashboardProps) {
     wrapperStyle: { outline: "none" },
   };
 
-  // ── Renderização ──
   if (byCategory.length === 0) return (
     <div style={{ textAlign: "center", padding: "60px 20px", color: C.sub, display: "flex", flexDirection: "column", alignItems: "center" }}>
       <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke={C.muted} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ marginBottom: 12 }}><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
@@ -93,7 +62,7 @@ export function Dashboard({ selectedMonth }: DashboardProps) {
 
   return (
     <div>
-      {/* Gráfico de Categorias (Pizza) */}
+      {/* Gráfico de Categorias */}
       {byCategory.length > 0 && (
         <div style={{ background: C.card, borderRadius: 16, padding: 20, marginBottom: 12 }}>
           <div style={{ fontSize: 13, fontWeight: 600, color: C.sub, marginBottom: 16, textTransform: "uppercase", letterSpacing: 1 }}>Gastos por Categorias</div>
@@ -119,7 +88,7 @@ export function Dashboard({ selectedMonth }: DashboardProps) {
         </div>
       )}
 
-      {/* Gráfico Diário (Barras) */}
+      {/* Gráfico Diário */}
       {byDate.length > 0 && (
         <div style={{ background: C.card, borderRadius: 16, padding: 20, marginBottom: 12 }}>
           <div style={{ fontSize: 13, fontWeight: 600, color: C.sub, marginBottom: 16, textTransform: "uppercase", letterSpacing: 1 }}>Resumo Diário</div>
@@ -143,7 +112,7 @@ export function Dashboard({ selectedMonth }: DashboardProps) {
         </div>
       )}
 
-      {/* Gráfico de 6 Meses (Barras) */}
+      {/* Gráfico de 6 Meses */}
       {data6.some(d => d.receita > 0 || d.gasto > 0) && (
         <div style={{ background: C.card, borderRadius: 16, padding: 20, marginBottom: 12 }}>
           <div style={{ fontSize: 13, fontWeight: 600, color: C.sub, marginBottom: 16, textTransform: "uppercase", letterSpacing: 1 }}>Comparativo de 6 Meses</div>
