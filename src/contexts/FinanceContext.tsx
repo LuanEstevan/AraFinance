@@ -110,11 +110,12 @@ export function FinanceProvider({ children }: { children: ReactNode }) {
     setSaving(false);
   }, [user]);
 
-  const saveTx = async (f: DraftTransaction, updateAll: boolean) => {
+    const saveTx = async (f: DraftTransaction, updateAll: boolean) => {
     if (!f.description || !f.amount) return;
     
     const totalAmt = parseBR(f.amount);
-    const installments = parseInt(f.installments) || 1;
+    // Aqui nós convertemos f.installments (string do input) para número (ou 1 se vier vazio)
+    const installments = Number(f.installments) || 1; 
     let newTxs: Transaction[];
     let newId = nextTxId;
 
@@ -122,13 +123,13 @@ export function FinanceProvider({ children }: { children: ReactNode }) {
       if (updateAll && f.installmentGroup) {
         newTxs = transactions.map(t => {
           if (t.installmentGroup === f.installmentGroup) return { ...t, category: f.category, accountId: f.accountId };
-          if (t.id === f.editId) return { ...f, id: f.editId as number, amount: totalAmt } as Transaction;
+          if (t.id === f.editId) return { ...f, id: f.editId as number, amount: totalAmt, installments } as Transaction;
           return t;
         });
       } else {
-        newTxs = transactions.map(t => t.id === f.editId ? { ...f, id: f.editId as number, amount: totalAmt } as Transaction : t);
+        newTxs = transactions.map(t => t.id === f.editId ? { ...f, id: f.editId as number, amount: totalAmt, installments } as Transaction : t);
       }
-    } else if (installments: Number(tx.installments), {
+    } else if (installments > 1) { // <-- Esta é a linha corrigida. Se for parcelado, cai aqui.
       const parcelAmt = totalAmt / installments;
       const [y, m, d] = f.date.split("-").map(Number);
       const generated: Transaction[] = Array.from({ length: installments }, (_, i) => {
@@ -139,6 +140,7 @@ export function FinanceProvider({ children }: { children: ReactNode }) {
           ...f,
           id: nextTxId + i,
           amount: parcelAmt,
+          installments, // E passamos a propriedade convertida aqui
           description: `${f.description} ${i + 1}/${installments}`,
           date: `${dd.getFullYear()}-${monthStr}-${dayStr}`,
           installmentGroup: nextTxId,
@@ -159,6 +161,7 @@ export function FinanceProvider({ children }: { children: ReactNode }) {
           ...f,
           id: nextTxId + i,
           amount: totalAmt,
+          installments, // Aqui também
           date: `${dd.getFullYear()}-${monthStr}-${dayStr}`,
           recurringGroup: nextTxId
         } as Transaction;
@@ -166,7 +169,7 @@ export function FinanceProvider({ children }: { children: ReactNode }) {
       newTxs = [...transactions, ...generated];
       newId = nextTxId + 24;
     } else {
-      newTxs = [...transactions, { ...f, id: nextTxId, amount: totalAmt } as Transaction];
+      newTxs = [...transactions, { ...f, id: nextTxId, amount: totalAmt, installments } as Transaction];
       newId = nextTxId + 1;
     }
 
