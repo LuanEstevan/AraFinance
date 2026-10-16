@@ -199,7 +199,7 @@ export default function App() {
       </div>
 
       <div key={tab} className="tab-content" style={{ padding: "16px 16px 0" }}>
-        {tab === "dashboard" && <Dashboard transactions={transactions} selectedMonth={selectedMonth} byCategory={byCategory} byDate={byDate} />}
+        {tab === "dashboard" && <Dashboard selectedMonth={selectedMonth} />}
         {tab === "contas" && <Contas selectedMonth={selectedMonth} onNewAcc={() => setAccModal({ isOpen: true, data: { kind: "bank", name: "", balance: "", limit: "", colorIdx: 0 }})} onAccDetail={(a) => setAccModal({ isOpen: true, data: a as any })} />}        
         {tab === "historico" && <Historico sorted={filtered} selectedMonth={selectedMonth} searchQuery={searchQuery} onSearchChange={setSearchQuery} onEditTx={(t) => setTxModal({ isOpen: true, data: t as any })} onAdvance={() => {}} />}
         {tab === "metas" && <Metas selectedMonth={selectedMonth} onNew={() => {}} onEdit={() => {}} />}
@@ -240,7 +240,7 @@ export default function App() {
             </button>
             
             {txModal.data.editId != null && (
-              <button onClick={() => { setPendingDelete({ type: "tx", id: txModal.data!.editId as number, label: txModal.data!.description }); setTxModal({ isOpen: false, data: null }); }} style={btn("none", { border: "1px solid " + C.red + "44", color: C.red })}>Remover lançamento</button>
+              <button onClick={() => { setPendingDelete({ type: "tx", id: Number(txModal.data!.editId), label: txModal.data!.description }); setTxModal({ isOpen: false, data: null }); }} style={btn("none", { border: "1px solid " + C.red + "44", color: C.red })}>Remover lançamento</button>
             )}
           </div>
         </Modal>
@@ -272,4 +272,28 @@ export default function App() {
             </button>
             
             {accModal.data.editId != null && (
-              <button onClick={() => { setPendingDelete({ type: "account", id: accModal.data!.editId as number, label:
+              <button onClick={() => { setPendingDelete({ type: "account", id: Number(accModal.data!.editId), label: accModal.data!.name }); setAccModal({ isOpen: false, data: null }); }} style={btn("none", { border: "1px solid " + C.red + "44", color: C.red })}>Remover conta</button>
+            )}
+          </div>
+        </Modal>
+      )}
+
+      <SideMenu isOpen={showMenu} onClose={() => setShowMenu(false)} user={user} onSignOut={signOut} onSignIn={signIn} onSignUp={signUp} currentLanguage={language} onLanguageChange={handleLanguageChange} transactions={transactions} onClearData={clearAllData} />
+
+      {pendingDelete && (
+        <ConfirmDialog
+          title={pendingDelete.type === "tx" ? "Remover lançamento?" : pendingDelete.type === "account" ? "Remover conta?" : "Remover meta?"}
+          message="Essa ação não pode ser desfeita."
+          confirmLabel="Remover"
+          onCancel={() => setPendingDelete(null)}
+          onConfirm={async () => {
+            if (pendingDelete.type === "tx") await deleteTx(pendingDelete.id);
+            if (pendingDelete.type === "account") await deleteAccount(pendingDelete.id);
+            if (pendingDelete.type === "goal") await deleteGoal(pendingDelete.id);
+            setPendingDelete(null);
+          }}
+        />
+      )}
+    </div>
+  );
+}
