@@ -26,8 +26,8 @@ export default function App() {
   // Contextos
   const { user, authLoading, signIn, signUp, signOut } = useAuth();
   const { 
-    transactions, accounts, goals, paidBills, loadingData, saving, 
-    saveTx, deleteTx, saveAcc, deleteAccount, saveGoal, deleteGoal, togglePaidBill, saveAdvance, clearAllData 
+    transactions, accounts, loadingData, saving, 
+    saveTx, deleteTx, saveAcc, deleteAccount, deleteGoal, clearAllData 
   } = useFinance();
 
   // UI state
@@ -36,7 +36,13 @@ export default function App() {
   const [showMenu, setShowMenu] = useState<boolean>(false);
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [pendingDelete, setPendingDelete] = useState<{ type:"tx"|"account"|"goal"; id:number; label:string } | null>(null);
-  
+  const [txModalOpen, setTxModalOpen] = useState(false);
+  const [accModalOpen, setAccModalOpen] = useState(false);
+  const [txToEdit, setTxToEdit] = useState<any>(null);
+  const [accDetail, setAccDetail] = useState<any>(null);
+  const [advanceModal, setAdvanceModal] = useState<any>(null);
+  const [goalModal, setGoalModal] = useState<any>(null);
+
   const [language, setLanguage] = useState<Language>(() => {
     return (localStorage.getItem("ara-language") as Language) || "pt";
   });
@@ -88,19 +94,8 @@ export default function App() {
     return Object.values(map).sort((a, b) => a.day.localeCompare(b.day));
   }, [filtered]);
 
-  const spendByAccount = useMemo(() => {
-    const map: Record<string | number, number> = {};
-    filtered.filter(tx => tx.type === "expense").forEach(tx => {
-      if (!map[tx.accountId]) map[tx.accountId] = 0;
-      map[tx.accountId] += tx.amount;
-    });
-    return map;
-  }, [filtered]);
-
-  const sorted = useMemo(() => [...filtered].sort((a, b) => b.date.localeCompare(a.date)), [filtered]);
   const banks  = useMemo(() => accounts.filter(a => a.kind === "bank"), [accounts]);
   const cards  = useMemo(() => accounts.filter(a => a.kind === "card"), [accounts]);
-  const totalBankBalance = useMemo(() => banks.reduce((s, a) => s + Number(parseBR(String(a.balance))), 0), [banks]);
 
   // ── Navegação de Meses ──
   const prevMonth = useCallback(() => {
@@ -126,29 +121,6 @@ export default function App() {
   }), []);
 
   const openNewTx   = useCallback(() => setTxModal({ isOpen: true, data: EMPTY_TX() }), [EMPTY_TX]);
-  const openEditTx  = useCallback((t: Transaction) => setTxModal({ 
-    isOpen: true, 
-    data: { 
-      ...t, 
-      amount: String(t.amount).replace(".", ","), 
-      editId: t.id,
-      accountId: String(t.accountId),
-      installments: "1" // Simplified for now
-    } as DraftTransaction 
-  }), []);
-
-  const openNewAcc  = useCallback(() => setAccModal({ isOpen: true, data: EMPTY_ACC() }), [EMPTY_ACC]);
-  const openEditAcc = useCallback((a: Account) => setAccModal({ 
-    isOpen: true, 
-    data: { ...a, balance: String(a.balance), limit: String(a.limit || ""), editId: a.id } as DraftAccount 
-  }), []);
-
-  const openAdvance = useCallback((group: Transaction[]) => {
-    const future = group.filter(tx => getBillingYM(tx.date, tx.accountId, accounts) > selectedMonth).sort((a,b) => a.date.localeCompare(b.date));
-    const values: Record<number, { checked: boolean; amount: string }> = {};
-    future.forEach(tx => { values[tx.id] = { checked: false, amount: tx.amount.toFixed(2).replace(".", ",") }; });
-    setAdvanceModal({ group, future, values });
-  }, [selectedMonth, accounts]);
 
   const handleLanguageChange = (lang: Language) => {
     setLanguage(lang);
