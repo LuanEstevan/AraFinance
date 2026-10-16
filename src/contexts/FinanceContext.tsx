@@ -18,7 +18,7 @@ interface FinanceContextData {
   saveGoal: (f: Goal) => Promise<void>;
   deleteGoal: (id: number) => Promise<void>;
   togglePaidBill: (accId: number, ym: string) => Promise<void>;
-  saveAdvance: (future: Transaction[], values: Record<number, { checked: boolean; amount: string }>, advDate: string) => Promise<void>;
+  saveAdvance: (values: Record<number, { checked: boolean; amount: string }>, advDate: string) => Promise<void>;
   clearAllData: () => Promise<void>;
 }
 
