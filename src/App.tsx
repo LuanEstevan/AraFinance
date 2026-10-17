@@ -113,18 +113,30 @@ export default function App() {
     localStorage.setItem("ara-language", lang);
   };
 
-  if (authLoading) return (
-    <div style={{ minHeight: "100vh", background: C.bg, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 12 }}>
-      <AraLogo size={72} id="splash" />
-      <div style={{ fontSize: 22, fontWeight: 800, color: C.text }}>Ara Finance</div>
-    </div>
-  );
+    // ── Loading State Unificado ──
+  const isAppStarting = authLoading || loadingData;
 
-  if (loadingData) return (
+  if (isAppStarting) return (
     <div style={{ minHeight: "100vh", background: C.bg, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", color: C.text, gap: 12 }}>
-      <AraLogo size={80} id="loading" />
+      {/* Animação CSS nativa para a logo respirar suavemente enquanto carrega */}
+      <style>{`
+        @keyframes pulseLogo {
+          0% { transform: scale(1); opacity: 0.8; }
+          50% { transform: scale(1.05); opacity: 1; }
+          100% { transform: scale(1); opacity: 0.8; }
+        }
+        .splash-logo { animation: pulseLogo 2s ease-in-out infinite; }
+      `}</style>
+      
+      <div className="splash-logo">
+        <AraLogo size={80} id="unified-splash" />
+      </div>
       <div style={{ fontSize: 22, fontWeight: 800, color: C.text }}>Ara Finance</div>
-      <div style={{ fontSize: 13, color: C.sub }}>Controle com clareza. Viva melhor.</div>
+      
+      {/* O texto extra só aparece suavemente quando já validou o usuário e está baixando os dados */}
+      <div style={{ fontSize: 13, color: !authLoading ? C.sub : "transparent", transition: "color 0.3s ease" }}>
+        Controle com clareza. Viva melhor.
+      </div>
     </div>
   );
 
