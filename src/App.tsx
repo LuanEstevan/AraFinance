@@ -199,7 +199,7 @@ export default function App() {
       </div>
 
       <div key={tab} className="tab-content" style={{ padding: "16px 16px 0" }}>
-        {tab === "dashboard" && <Dashboard selectedMonth={selectedMonth} />}
+        {tab === "dashboard" && <Dashboard filtered={filtered} transactions={transactions} selectedMonth={selectedMonth} totalIncome={totalIncome} totalExpense={totalExpense} balance={balance} byCategory={byCategory} byDate={byDate} />}
         {tab === "contas" && <Contas selectedMonth={selectedMonth} onNewAcc={() => setAccModal({ isOpen: true, data: { kind: "bank", name: "", balance: "", limit: "", colorIdx: 0 }})} onAccDetail={(a) => setAccModal({ isOpen: true, data: a as any })} />}        
         {tab === "historico" && <Historico sorted={filtered} selectedMonth={selectedMonth} searchQuery={searchQuery} onSearchChange={setSearchQuery} onEditTx={(t) => setTxModal({ isOpen: true, data: t as any })} onAdvance={() => {}} />}
         {tab === "metas" && <Metas selectedMonth={selectedMonth} onNew={() => {}} onEdit={() => {}} />}
